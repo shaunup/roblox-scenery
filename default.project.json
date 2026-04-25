@@ -1,0 +1,42 @@
+{
+    "name": "TwilightLanternFestival",
+    "tree": {
+        "$className": "DataModel",
+
+        "ServerScriptService": {
+            "$className": "ServerScriptService",
+            "WorldBuilder": {
+                "$path": "src/ServerScriptService/WorldBuilder.server.lua"
+            },
+            "GameManager": {
+                "$path": "src/ServerScriptService/GameManager.server.lua"
+            }
+        },
+
+        "StarterPlayer": {
+            "$className": "StarterPlayer",
+            "StarterPlayerScripts": {
+                "$className": "StarterPlayerScripts",
+                "CameraFollow": {
+                    "$path": "src/StarterPlayerScripts/CameraFollow.client.lua"
+                },
+                "BreathingExercise": {
+                    "$path": "src/StarterPlayerScripts/BreathingExercise.client.lua"
+                },
+                "MusicianDialog": {
+                    "$path": "src/StarterPlayerScripts/MusicianDialog.client.lua"
+                },
+                "LanternRelease": {
+                    "$path": "src/StarterPlayerScripts/LanternRelease.client.lua"
+                }
+            }
+        },
+
+        "ReplicatedStorage": {
+            "$className": "ReplicatedStorage",
+            "GameConfig": {
+                "$path": "src/ReplicatedStorage/GameConfig.lua"
+            }
+        }
+    }
+}
