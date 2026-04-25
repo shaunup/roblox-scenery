@@ -1,0 +1,23 @@
+{
+  "name": "GlowingPondTwilight",
+  "tree": {
+    "$className": "DataModel",
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "ScenerySetup": {
+        "$path": "src/server/ScenerySetup.server.lua"
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "PlayerSetup": {
+          "$path": "src/client/PlayerSetup.client.lua"
+        }
+      }
+    }
+  }
+}
