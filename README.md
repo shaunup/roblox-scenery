@@ -1,37 +1,36 @@
-# Flying Lanterns – Twilight Scenery (Roblox)
+# Glowing Pond – Twilight Environment (Roblox)
 
-A complete Roblox 3-D scene featuring **38 rising sky lanterns** set against a **twilight mountain landscape** with a dimming golden-hour sunset, a reflective lake, stars, fireflies, and a stone viewing platform.
+A peaceful Roblox 3-D scene centred on a **glowing cyan pond** under a deep **twilight night sky**. Players spawn on the bank and are free to walk around the entire area.
 
 ---
 
-## Scene overview
+## Scene at a glance
 
 | Feature | Details |
 |---|---|
-| **Lighting** | `ClockTime` ≈ 18.8 (late dusk), warm amber fog, purple-shadow ambient |
-| **Atmosphere** | Haze 2.6, orange colour scatter, violet decay, gentle glare |
-| **Sky** | 5 000 stars, oversized moon, built-in Roblox sky texture |
-| **Post-processing** | BloomEffect (glow on lanterns), SunRaysEffect, ColourCorrection |
-| **Terrain** | Procedural mountain ridges (3 ranges), snow caps, valley floor, water lake |
-| **Treeline** | Cosmetic cylinder forest at mountain bases |
-| **Lanterns** | 38 physics-driven rising lanterns with Fire particles and PointLight glow |
-| **Decorations** | Stone viewing platform, wooden poles with red hanging lanterns |
-| **Particles** | Firefly/sparkle ParticleEmitter across the valley floor |
-| **Camera** | Cinematic orbit intro; exits to standard Roblox camera on input |
+| **Sky** | `ClockTime` 20.2 – full night, 8 000 stars, oversized moon |
+| **Atmosphere** | Thin deep-blue haze, preserves star visibility |
+| **Post FX** | Strong BloomEffect (pond glow radiates outward), ColorCorrection (cool blue tint) |
+| **Pond** | Terrain water basin + translucent neon disc surface + ring of 8 accent PointLights + shimmer ParticleEmitter |
+| **Lily pads** | 7 glowing green neon pads floating on the pond |
+| **Terrain** | Flat grassy ground, mud bank around pond, dirt path leading to the water, rolling hills closing in the horizon |
+| **Trees** | ~24 hand-placed trees (trunk + sphere canopy) scattered around the area |
+| **Rocks** | Clusters of rocks around the pond bank |
+| **Reeds** | Thin reed-grass tufts at the waterline |
+| **Fireflies** | Green/yellow ParticleEmitter sparkles drifting over the whole area |
+| **Camera** | Standard Roblox follow-camera – full player freedom |
 
 ---
 
 ## File structure
 
 ```
-default.project.json          ← Rojo project manifest
+default.project.json            ← Rojo project manifest
 src/
   server/
-    ScenerySetup.server.lua   ← Main scene builder (lighting, terrain, lanterns)
+    ScenerySetup.server.lua     ← Builds everything at run-time
   client/
-    CameraScript.client.lua   ← Cinematic orbit intro camera
-  shared/
-    LanternTemplate.lua       ← Shared lantern colour palette & constants
+    PlayerSetup.client.lua      ← Sets standard follow-camera
 ```
 
 ---
@@ -40,40 +39,29 @@ src/
 
 ### Option A – Rojo (recommended)
 
-1. Install [Rojo](https://rojo.space/) (v7+).
-2. Clone this repo and run:
+1. Install [Rojo v7](https://rojo.space/).
+2. In the project root run:
    ```bash
    rojo serve default.project.json
    ```
-3. Open **Roblox Studio**, install the [Rojo Studio plugin](https://rojo.space/docs/v7/installation/), and click **Connect**.
-4. Press **Play** – the scenery builds automatically at run-time.
+3. Open Roblox Studio, connect via the Rojo plugin, then press **Play**.
 
-### Option B – Manual Studio import
+### Option B – Manual paste into Studio
 
-1. Open a blank Roblox Studio place.
-2. Create a `Script` inside `ServerScriptService`, paste the contents of `src/server/ScenerySetup.server.lua`.
-3. Create a `LocalScript` inside `StarterPlayerScripts`, paste `src/client/CameraScript.client.lua`.
-4. Create a `ModuleScript` inside `ReplicatedStorage` named `LanternTemplate`, paste `src/shared/LanternTemplate.lua`.
-5. Press **Play**.
+1. Open a blank place in Roblox Studio.
+2. In `ServerScriptService` create a **Script**, paste `src/server/ScenerySetup.server.lua`.
+3. Under `StarterPlayer > StarterPlayerScripts` create a **LocalScript**, paste `src/client/PlayerSetup.client.lua`.
+4. Press **Play**.
 
 ---
 
-## Customisation tips
+## Customisation
 
-| What to change | Where |
+| Goal | Where |
 |---|---|
-| Time of day / sun angle | `Lighting.ClockTime` in `ScenerySetup` |
-| Number of lanterns | `LANTERN_COUNT` constant |
-| Lantern rise speed | `LANTERN_RISE_SPEED` constant |
-| Mountain shapes & positions | `buildMountainRidge(...)` calls |
-| Lantern colours | `LanternTemplate.BodyColours` table |
-| Firefly particle rate | `particles.Rate` in `buildDecorations()` |
-| Clock advance speed | `Lighting.ClockTime = t + 0.005` loop tick |
-
----
-
-## Performance notes
-
-- All lantern motion runs on the **server** via `RunService.Heartbeat` coroutines. For large player counts consider moving animation to a `LocalScript` using a `RemoteEvent` to seed initial positions.
-- `Workspace.StreamingEnabled` is set to `false` by default; enable it for large maps.
-- Terrain generation runs once at startup and is static thereafter.
+| Lighter / darker night | `Lighting.ClockTime` (try 19–21) |
+| Pond glow colour | `glowDisc.Color` and `centreLight.Color` |
+| Pond size | `POND_RADIUS` constant + matching FillCylinder calls |
+| More / fewer trees | `treeSpots` table |
+| Firefly density | `ff.Rate` value |
+| Bloom intensity | `bloom.Intensity` and `bloom.Size` |

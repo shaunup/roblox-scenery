@@ -1,14 +1,7 @@
 {
-  "name": "FlyingLanternsTwilight",
+  "name": "GlowingPondTwilight",
   "tree": {
     "$className": "DataModel",
-
-    "Workspace": {
-      "$className": "Workspace",
-      "$properties": {
-        "StreamingEnabled": false
-      }
-    },
 
     "ServerScriptService": {
       "$className": "ServerScriptService",
@@ -17,19 +10,12 @@
       }
     },
 
-    "ReplicatedStorage": {
-      "$className": "ReplicatedStorage",
-      "LanternTemplate": {
-        "$path": "src/shared/LanternTemplate.lua"
-      }
-    },
-
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
-        "CameraScript": {
-          "$path": "src/client/CameraScript.client.lua"
+        "PlayerSetup": {
+          "$path": "src/client/PlayerSetup.client.lua"
         }
       }
     }
