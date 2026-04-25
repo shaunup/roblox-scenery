@@ -129,7 +129,6 @@ Lighting.OutdoorAmbient   = Color3.fromRGB(70, 50, 100)
 Lighting.Brightness       = 1.2
 Lighting.ColorShift_Bottom= Color3.fromRGB(20, 10, 40)
 Lighting.ColorShift_Top   = Color3.fromRGB(255, 130, 60)
-Lighting.FogEnabled       = true
 Lighting.FogColor         = Color3.fromRGB(50, 35, 80)
 Lighting.FogStart         = 200
 Lighting.FogEnd           = 600
