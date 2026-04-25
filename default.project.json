@@ -1,0 +1,51 @@
+{
+  "name": "TwilightTrail",
+  "tree": {
+    "$className": "DataModel",
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "ScenerySetup": {
+        "$path": "src/server/ScenerySetup.server.lua"
+      },
+      "MilestoneManager": {
+        "$path": "src/server/MilestoneManager.server.lua"
+      }
+    },
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "MusicLibrary": {
+        "$path": "src/shared/MusicLibrary.lua"
+      },
+      "Remotes": {
+        "$className": "Folder",
+        "OpenBreathing": { "$className": "RemoteEvent" },
+        "BreathingComplete": { "$className": "RemoteEvent" },
+        "AwardLantern": { "$className": "RemoteEvent" },
+        "OpenMusicDialog": { "$className": "RemoteEvent" },
+        "PlayMusic": { "$className": "RemoteEvent" }
+      }
+    },
+
+    "StarterGui": {
+      "$className": "StarterGui",
+      "BreathingUI": {
+        "$path": "src/client/BreathingUI.client.lua"
+      },
+      "MusicUI": {
+        "$path": "src/client/MusicUI.client.lua"
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "PlayerSetup": {
+          "$path": "src/client/PlayerSetup.client.lua"
+        }
+      }
+    }
+  }
+}
