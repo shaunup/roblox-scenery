@@ -1,0 +1,37 @@
+{
+  "name": "FlyingLanternsTwilight",
+  "tree": {
+    "$className": "DataModel",
+
+    "Workspace": {
+      "$className": "Workspace",
+      "$properties": {
+        "StreamingEnabled": false
+      }
+    },
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "ScenerySetup": {
+        "$path": "src/server/ScenerySetup.server.lua"
+      }
+    },
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "LanternTemplate": {
+        "$path": "src/shared/LanternTemplate.lua"
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "CameraScript": {
+          "$path": "src/client/CameraScript.client.lua"
+        }
+      }
+    }
+  }
+}
