@@ -23,6 +23,9 @@
                 "BreathingExercise": {
                     "$path": "src/StarterPlayerScripts/BreathingExercise.client.lua"
                 },
+                "FlowerMiniGame": {
+                    "$path": "src/StarterPlayerScripts/FlowerMiniGame.client.lua"
+                },
                 "MusicianDialog": {
                     "$path": "src/StarterPlayerScripts/MusicianDialog.client.lua"
                 },

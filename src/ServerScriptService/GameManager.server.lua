@@ -40,6 +40,10 @@ end
 local evBreathingStart    = makeRemote("BreathingStart")
 local evBreathingComplete = makeRemote("BreathingComplete")
 local evLanternAwarded    = makeRemote("LanternAwarded")
+local evGardenStart       = makeRemote("GardenStart")
+local evGardenFlower      = makeRemote("GardenFlower")       -- server → client: bloom plot N
+local evGardenComplete    = makeRemote("GardenComplete")     -- client → server: all 3 done
+local evGardenLanternAwarded = makeRemote("GardenLanternAwarded")
 local evMusicianApproach  = makeRemote("MusicianApproach")
 local evMusicChoice       = makeRemote("MusicChoice")
 local evPlayMusic         = makeRemote("PlayMusic")
@@ -52,10 +56,12 @@ local playerState = {}  -- [player] = { hasLantern, breathDone, musicDone, pondR
 
 Players.PlayerAdded:Connect(function(player)
     playerState[player] = {
-        hasLantern  = false,
-        breathDone  = false,
-        musicDone   = false,
-        pondReached = false,
+        hasLantern   = false,
+        breathDone   = false,
+        gardenDone   = false,   -- Gratitude Garden completed
+        gardenPlot   = 0,       -- how many flowers have bloomed (0-3)
+        musicDone    = false,
+        pondReached  = false,
     }
     -- Store lantern count as leaderstats
     local ls = Instance.new("Folder")
@@ -73,12 +79,14 @@ end)
 
 -- ── Trigger touch detection ───────────────────────────────────────────────────
 
-local world      = Workspace:WaitForChild("LanternWorld")
-local breathNode = world:WaitForChild("BreathingMilestone")
-local bonfireNode= world:WaitForChild("Bonfire")
-local pondNode   = world:WaitForChild("GlowPond")
+local world       = Workspace:WaitForChild("LanternWorld")
+local breathNode  = world:WaitForChild("BreathingMilestone")
+local gardenNode  = world:WaitForChild("GratitudeGarden")
+local bonfireNode = world:WaitForChild("Bonfire")
+local pondNode    = world:WaitForChild("GlowPond")
 
 local breathTrigger   = breathNode:WaitForChild("BreathTrigger")
+local gardenTrigger   = gardenNode:WaitForChild("GardenTrigger")
 local musicianTrigger = bonfireNode:WaitForChild("MusicianTrigger")
 local releaseTrigger  = pondNode:WaitForChild("ReleaseTrigger")
 
@@ -99,12 +107,21 @@ breathTrigger.Touched:Connect(function(hit)
     evBreathingStart:FireClient(player)
 end)
 
+gardenTrigger.Touched:Connect(function(hit)
+    local player = getPlayerFromHit(hit)
+    if not player then return end
+    local state = playerState[player]
+    if not state or state.gardenDone then return end
+    if not state.breathDone then return end   -- must breathe first
+    evGardenStart:FireClient(player)
+end)
+
 musicianTrigger.Touched:Connect(function(hit)
     local player = getPlayerFromHit(hit)
     if not player then return end
     local state = playerState[player]
     if not state or state.musicDone then return end
-    if not state.breathDone then return end  -- must complete breathing first
+    if not state.gardenDone then return end   -- must complete garden first
     evMusicianApproach:FireClient(player)
 end)
 
@@ -132,7 +149,50 @@ evBreathingComplete.OnServerEvent:Connect(function(player)
     end
 
     evLanternAwarded:FireClient(player)
-    print("[GameManager] Lantern awarded to", player.Name)
+    print("[GameManager] Lantern #1 awarded to", player.Name)
+end)
+
+-- ── Gratitude Garden handlers ──────────────────────────────────────────────────
+--[[
+    GardenFlower fires from the CLIENT when the player submits each gratitude
+    entry. The server validates (must be in garden, not done, slot available),
+    increments the plot counter, echoes the bloom index back to the client,
+    and awards a second lantern on the 3rd flower.
+]]
+
+evGardenFlower.OnServerEvent:Connect(function(player, gratitudeText)
+    local state = playerState[player]
+    if not state or state.gardenDone then return end
+    if not state.breathDone then return end
+    if state.gardenPlot >= 3 then return end
+
+    -- Basic sanity: non-empty text
+    if type(gratitudeText) ~= "string" or #gratitudeText:gsub("%s+", "") == 0 then return end
+
+    state.gardenPlot = state.gardenPlot + 1
+    local plotIdx    = state.gardenPlot
+    print(string.format("[GameManager] %s planted flower %d: \"%s\"",
+        player.Name, plotIdx, gratitudeText:sub(1, 60)))
+
+    -- Tell client which plot index to bloom (1, 2, or 3)
+    evGardenFlower:FireClient(player, plotIdx)
+end)
+
+evGardenComplete.OnServerEvent:Connect(function(player)
+    local state = playerState[player]
+    if not state or state.gardenDone then return end
+    if state.gardenPlot < 3 then return end   -- must have planted all 3
+
+    state.gardenDone = true
+
+    -- Award second lantern
+    local ls = player:FindFirstChild("leaderstats")
+    if ls then
+        ls.Lanterns.Value = ls.Lanterns.Value + 1
+    end
+
+    evGardenLanternAwarded:FireClient(player)
+    print("[GameManager] Lantern #2 (Garden) awarded to", player.Name)
 end)
 
 -- ── Gemini music fetch ─────────────────────────────────────────────────────────
