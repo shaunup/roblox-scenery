@@ -1,0 +1,86 @@
+{
+  "name": "TwilightTrail",
+  "tree": {
+    "$className": "DataModel",
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "ScenerySetup": {
+        "$path": "src/server/ScenerySetup.server.lua"
+      },
+      "MilestoneManager": {
+        "$path": "src/server/MilestoneManager.server.lua"
+      },
+      "GardenManager": {
+        "$path": "src/server/GardenManager.server.lua"
+      },
+      "JigsawManager": {
+        "$path": "src/server/JigsawManager.server.lua"
+      },
+      "LanternManager": {
+        "$path": "src/server/LanternManager.server.lua"
+      }
+    },
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "MusicLibrary": {
+        "$path": "src/shared/MusicLibrary.lua"
+      },
+      "Remotes": {
+        "$className": "Folder",
+        "OpenBreathing":    { "$className": "RemoteEvent" },
+        "BreathingComplete":{ "$className": "RemoteEvent" },
+        "AwardLantern":     { "$className": "RemoteEvent" },
+        "OpenMusicDialog":  { "$className": "RemoteEvent" },
+        "PlayMusic":        { "$className": "RemoteEvent" },
+        "OpenGarden":       { "$className": "RemoteEvent" },
+        "GardenFlower":     { "$className": "RemoteEvent" },
+        "GardenComplete":   { "$className": "RemoteEvent" },
+        "OpenJigsaw":       { "$className": "RemoteEvent" },
+        "JigsawRound":      { "$className": "RemoteEvent" },
+        "JigsawSubmit":     { "$className": "RemoteEvent" },
+        "JigsawResult":     { "$className": "RemoteEvent" },
+        "JigsawDone":         { "$className": "RemoteEvent" },
+        "LanternPickedUp":    { "$className": "RemoteEvent" },
+        "LanternSiteReached": { "$className": "RemoteEvent" },
+        "LanternRelease":     { "$className": "RemoteEvent" },
+        "LanternReleased":    { "$className": "RemoteEvent" },
+        "LanternClicked":     { "$className": "RemoteEvent" },
+        "LanternMessage":     { "$className": "RemoteEvent" }
+      }
+    },
+
+    "StarterGui": {
+      "$className": "StarterGui",
+      "BreathingUI": {
+        "$path": "src/client/BreathingUI.client.lua"
+      },
+      "MusicUI": {
+        "$path": "src/client/MusicUI.client.lua"
+      },
+      "GardenUI": {
+        "$path": "src/client/GardenUI.client.lua"
+      },
+      "JigsawUI": {
+        "$path": "src/client/JigsawUI.client.lua"
+      },
+      "LanternCarry": {
+        "$path": "src/client/LanternCarry.client.lua"
+      },
+      "LanternCinematic": {
+        "$path": "src/client/LanternCinematic.client.lua"
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "PlayerSetup": {
+          "$path": "src/client/PlayerSetup.client.lua"
+        }
+      }
+    }
+  }
+}
