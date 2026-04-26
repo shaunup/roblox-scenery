@@ -118,6 +118,7 @@ local fTerrain  = folder("Terrain")
 local fMountains= folder("Mountains")
 local fTrail    = folder("Trail")
 local fBreath   = folder("BreathingMilestone")
+local fGarden   = folder("GratitudeGarden")
 local fBonfire  = folder("Bonfire")
 local fPond     = folder("GlowPond")
 local fDeco     = folder("Decorations")
@@ -328,13 +329,13 @@ end
      → W1  (30, 0, -30)
      → W2  (-30, 0, -70)
      → W3  (30, 0, -110)
-     → W4  (-30, 0, -150) ← Breathing Milestone
+     → W4  (-30, 0, -150) ← [5] Breathing Milestone
      → W5  (30, 0, -190)
-     → W6  (-30, 0, -230)
-     → W7  (30, 0, -270)  ← Bonfire
+     → W6  (-30, 0, -230) ← [7] Gratitude Garden  ★ NEW
+     → W7  (30, 0, -270)  ← [8] Bonfire
      → W8  (-30, 0, -310)
      → W9  (30, 0, -350)
-     → W10 (0, 0, -390)   ← Glow Pond
+     → W10 (0, 0, -390)   ← [11] Glow Pond
 ]]
 
 local trailWaypoints = {
@@ -472,6 +473,176 @@ local breathTrigger = part(fBreath, {
     CanCollide  = false,
 })
 breathTrigger.Anchored = true
+
+-- ── GRATITUDE GARDEN ─────────────────────────────────────────────────────────
+--[[
+    Location: trailWaypoints[7] = (-30, 1, -230)
+    Layout:
+      • Wooden arch entrance with warm string-light glow
+      • 3 × raised garden beds arranged in a gentle arc
+      • Each bed holds 3 empty plot markers (9 total flower slots)
+      • Flowers bloom one-by-one as the player submits gratitude entries
+      • Soft neon petal spotlight on each bed
+      • Invisible trigger zone activates the mini-game
+]]
+
+local gardenPos = trailWaypoints[7]   -- (-30, 1, -230)
+
+-- Soft grass clearing under the garden
+part(fGarden, {
+    Name        = "GardenGround",
+    Size        = Vector3.new(28, 0.3, 28),
+    CFrame      = CFrame.new(gardenPos + Vector3.new(0, -0.5, 0)),
+    BrickColor  = BrickColor.new("Bright green"),
+    Material    = Enum.Material.Grass,
+})
+
+-- Wooden entrance arch
+local gardenArchLeft = part(fGarden, {
+    Name       = "GardenArchLeft",
+    Size       = Vector3.new(0.8, 7, 0.8),
+    CFrame     = CFrame.new(gardenPos + Vector3.new(-3.5, 3.5, 4)),
+    BrickColor = BrickColor.new("Reddish brown"),
+    Material   = Enum.Material.Wood,
+})
+local gardenArchRight = part(fGarden, {
+    Name       = "GardenArchRight",
+    Size       = Vector3.new(0.8, 7, 0.8),
+    CFrame     = CFrame.new(gardenPos + Vector3.new(3.5, 3.5, 4)),
+    BrickColor = BrickColor.new("Reddish brown"),
+    Material   = Enum.Material.Wood,
+})
+local gardenArchTop = part(fGarden, {
+    Name       = "GardenArchTop",
+    Size       = Vector3.new(8, 0.8, 0.8),
+    CFrame     = CFrame.new(gardenPos + Vector3.new(0, 7.4, 4)),
+    BrickColor = BrickColor.new("Reddish brown"),
+    Material   = Enum.Material.Wood,
+})
+-- Warm string lights draped along arch top
+local archLight = part(fGarden, {
+    Name        = "ArchStringLight",
+    Size        = Vector3.new(7.6, 0.2, 0.2),
+    CFrame      = CFrame.new(gardenPos + Vector3.new(0, 7.0, 4)),
+    BrickColor  = BrickColor.new("Bright yellow"),
+    Material    = Enum.Material.Neon,
+    Transparency= 0.1,
+    CastShadow  = false,
+    CanCollide  = false,
+})
+addPointLight(archLight, 0.7, 16, Color3.fromRGB(255, 220, 130))
+
+-- Sign on arch
+addBillboard(gardenArchTop,
+    "🌸  Garden of Gratitude  🌸",
+    Color3.fromRGB(255, 220, 180), 11, Vector3.new(0, 2, 0))
+
+-- Three raised garden beds in a gentle forward arc
+-- Bed centres (local offset from gardenPos):
+local bedOffsets = {
+    Vector3.new(-6, 0, -3),   -- left bed
+    Vector3.new( 0, 0, -6),   -- centre bed (furthest in)
+    Vector3.new( 6, 0, -3),   -- right bed
+}
+
+-- Bed materials/colors cycle for visual variety
+local bedColors = { "Dark orange", "Reddish brown", "Dark orange" }
+
+-- Store plot positions in RS so the client can bloom flowers at them
+local gardenFolder = Instance.new("Folder")
+gardenFolder.Name  = "GardenPlots"
+gardenFolder.Parent = RS
+
+local plotIndex = 0
+
+for bi, bedOff in ipairs(bedOffsets) do
+    local bedPos = gardenPos + bedOff
+
+    -- Raised bed frame (box)
+    part(fGarden, {
+        Name        = "BedFrame" .. bi,
+        Size        = Vector3.new(8, 0.8, 3.8),
+        CFrame      = CFrame.new(bedPos + Vector3.new(0, 0.1, 0)),
+        BrickColor  = BrickColor.new(bedColors[bi]),
+        Material    = Enum.Material.Wood,
+    })
+    -- Soil fill
+    part(fGarden, {
+        Name        = "BedSoil" .. bi,
+        Size        = Vector3.new(7.4, 0.3, 3.2),
+        CFrame      = CFrame.new(bedPos + Vector3.new(0, 0.5, 0)),
+        BrickColor  = BrickColor.new("Reddish brown"),
+        Material    = Enum.Material.Ground,
+    })
+    -- Subtle neon glow strip along front of each bed
+    local bedGlow = part(fGarden, {
+        Name        = "BedGlow" .. bi,
+        Size        = Vector3.new(7.6, 0.12, 0.1),
+        CFrame      = CFrame.new(bedPos + Vector3.new(0, 0.6, 1.9)),
+        BrickColor  = BrickColor.new("Hot pink"),
+        Material    = Enum.Material.Neon,
+        Transparency= 0.4,
+        CastShadow  = false,
+        CanCollide  = false,
+    })
+    addPointLight(bedGlow, 0.5, 10, Color3.fromRGB(255, 160, 220))
+
+    -- 3 plot markers per bed (small stone discs)
+    for pi = 1, 3 do
+        local t     = (pi - 1) / 2 - 0.5   -- -0.5, 0, +0.5
+        local plotPos = bedPos + Vector3.new(t * 5.5, 0.7, 0)
+        plotIndex   = plotIndex + 1
+
+        -- Empty plot disc
+        local disc = part(fGarden, {
+            Name        = "PlotDisc" .. plotIndex,
+            Size        = Vector3.new(1.4, 0.15, 1.4),
+            CFrame      = CFrame.new(plotPos),
+            BrickColor  = BrickColor.new("Light stone grey"),
+            Material    = Enum.Material.SmoothPlastic,
+            CanCollide  = false,
+        })
+        disc.Shape = Enum.PartType.Cylinder
+        -- Rotate cylinder so flat face is on top
+        disc.CFrame = disc.CFrame * CFrame.Angles(0, 0, math.pi/2)
+
+        -- Store position for client flower bloom
+        local pv = Instance.new("Vector3Value")
+        pv.Name   = tostring(plotIndex)
+        pv.Value  = plotPos
+        pv.Parent = gardenFolder
+    end
+end
+
+-- Decorative butterfly / fairy lights around the garden
+local fairyPositions = {
+    Vector3.new(-10, 2,  0), Vector3.new(10, 2,  0),
+    Vector3.new(-10, 2, -8), Vector3.new(10, 2, -8),
+    Vector3.new( 0,  3, -10),
+}
+for i, fp in ipairs(fairyPositions) do
+    local fairy = sphere(fGarden, {
+        Name        = "FairyLight" .. i,
+        Size        = Vector3.new(0.35, 0.35, 0.35),
+        CFrame      = CFrame.new(gardenPos + fp),
+        BrickColor  = BrickColor.new("Bright yellow"),
+        Material    = Enum.Material.Neon,
+        Transparency= 0.2,
+        CastShadow  = false,
+        CanCollide  = false,
+    })
+    addPointLight(fairy, 0.4, 10, Color3.fromRGB(255, 230, 150))
+end
+
+-- Invisible trigger
+local gardenTrigger = part(fGarden, {
+    Name        = "GardenTrigger",
+    Size        = Vector3.new(14, 6, 14),
+    CFrame      = CFrame.new(gardenPos + Vector3.new(0, 3, 0)),
+    Material    = Enum.Material.Neon,
+    Transparency= 1,
+    CanCollide  = false,
+})
 
 -- ── BONFIRE AREA ──────────────────────────────────────────────────────────────
 
