@@ -244,7 +244,8 @@ local function buildPondGlow(folder)
     glowDisc.Name          = "PondGlow2"
     glowDisc.Shape         = Enum.PartType.Cylinder
     glowDisc.Size          = Vector3.new(0.3, 300, 300)
-    glowDisc.CFrame        = CFrame.new(200, 0.15, -57) * CFrame.Angles(0, 90, 90)
+    glowDisc.CFrame        = CFrame.new(200, 0.15, -57) --* CFrame.Angles(0, 90, 90)
+    glowDisc.Orientation    = Vector3.new(0, 90, 90)
     glowDisc.Anchored      = true
     glowDisc.CanCollide    = false
     glowDisc.CastShadow    = false
@@ -269,7 +270,7 @@ local function buildPondGlow(folder)
 
         local accentPart = Instance.new("Part", folder)
         accentPart.Size        = Vector3.new(0.5, 0.5, 0.5)
-        accentPart.CFrame      = CFrame.new(ax, 0.4, az)
+        accentPart.CFrame      = CFrame.new(200, 0.15, -57)
         accentPart.Anchored    = true
         accentPart.CanCollide  = false
         accentPart.CastShadow  = false
@@ -336,7 +337,7 @@ end
 local folder = Instance.new("Folder", Workspace)
 folder.Name  = "GlowingPondScene"
 -- buildTerrain()
--- buildPondGlow(folder)
+buildPondGlow(folder)
 -- buildScenery(folder)
 -- setupSpawn()
 
