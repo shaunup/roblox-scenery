@@ -16,6 +16,9 @@
       },
       "JigsawManager": {
         "$path": "src/server/JigsawManager.server.lua"
+      },
+      "LanternManager": {
+        "$path": "src/server/LanternManager.server.lua"
       }
     },
 
@@ -38,7 +41,13 @@
         "JigsawRound":      { "$className": "RemoteEvent" },
         "JigsawSubmit":     { "$className": "RemoteEvent" },
         "JigsawResult":     { "$className": "RemoteEvent" },
-        "JigsawDone":       { "$className": "RemoteEvent" }
+        "JigsawDone":         { "$className": "RemoteEvent" },
+        "LanternPickedUp":    { "$className": "RemoteEvent" },
+        "LanternSiteReached": { "$className": "RemoteEvent" },
+        "LanternRelease":     { "$className": "RemoteEvent" },
+        "LanternReleased":    { "$className": "RemoteEvent" },
+        "LanternClicked":     { "$className": "RemoteEvent" },
+        "LanternMessage":     { "$className": "RemoteEvent" }
       }
     },
 
@@ -55,6 +64,12 @@
       },
       "JigsawUI": {
         "$path": "src/client/JigsawUI.client.lua"
+      },
+      "LanternCarry": {
+        "$path": "src/client/LanternCarry.client.lua"
+      },
+      "LanternCinematic": {
+        "$path": "src/client/LanternCinematic.client.lua"
       }
     },
 
