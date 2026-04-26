@@ -467,18 +467,23 @@ shopPrompt.Triggered:Connect(function(player)
 end)
 
 -- ── Release site proximity ────────────────────────────────────────────────────
--- Poll rather than .Touched so it's reliable
+-- Fire LanternSiteReached exactly ONCE per player (guarded by siteFired table).
+local siteFired = {}
+Players.PlayerRemoving:Connect(function(p) siteFired[p] = nil end)
+
 task.spawn(function()
     local INTERVAL = 0.4
     while true do
         task.wait(INTERVAL)
         for _, player in ipairs(Players:GetPlayers()) do
-            if not hasLantern[player] then continue end
-            if releasedBy[player] then continue end
+            if not hasLantern[player]  then continue end
+            if releasedBy[player]      then continue end
+            if siteFired[player]       then continue end
             local char = player.Character
             local root = char and char:FindFirstChild("HumanoidRootPart")
             if not root then continue end
             if (root.Position - RELEASE_POS).Magnitude < 10 then
+                siteFired[player] = true
                 LanternSiteReached:FireClient(player)
             end
         end

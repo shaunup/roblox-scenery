@@ -266,12 +266,17 @@ LanternSiteReached.OnClientEvent:Connect(function()
             status.Text = "Write something — even one word ✦"
             status.TextColor3 = Color3.fromRGB(255, 180, 80); return
         end
+
+        -- Immediately lock button so double-clicks can't fire twice
         releaseBtn.Active = false
         releaseBtn.BackgroundColor3 = Color3.fromRGB(120, 80, 20)
         status.Text = "✦  Your lantern is ready to fly…"
         status.TextColor3 = Color3.fromRGB(255, 230, 120)
 
-        -- Remove the carried lantern visually
+        -- Fire server FIRST before any yields or screen destruction
+        LanternRelease:FireServer(msg)
+
+        -- Fade out the carried lantern (non-blocking, task.delay)
         if lanternPart and lanternPart.Parent then
             TweenService:Create(lanternPart,
                 TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
@@ -281,15 +286,15 @@ LanternSiteReached.OnClientEvent:Connect(function()
             end)
         end
 
-        task.wait(0.5)
-        -- Fade popup out
-        TweenService:Create(overlay,
-            TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-            {BackgroundTransparency = 1}):Play()
-        task.wait(1.1); screen:Destroy()
-
-        -- Tell server → cinematic begins
-        LanternRelease:FireServer(msg)
+        -- Fade popup out after a short pause, then destroy
+        task.delay(0.6, function()
+            TweenService:Create(overlay,
+                TweenInfo.new(0.9, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+                {BackgroundTransparency = 1}):Play()
+            task.delay(1.0, function()
+                if screen and screen.Parent then screen:Destroy() end
+            end)
+        end)
     end)
 end)
 
