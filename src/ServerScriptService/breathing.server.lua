@@ -1,12 +1,17 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local BreathingEvent = ReplicatedStorage:WaitForChild("BreathingEvent")
-print "sERVER"
+
 local CYCLE_TIME = 4
 local TOTAL_ROUNDS = 3
 
 local playerData = {}
+local isBreathing = {}
+
+local BreathingTrigger = workspace:WaitForChild("BreathingTrigger")
+local prompt = BreathingTrigger:WaitForChild("ProximityPrompt")
 
 local function startBreathing(player)
+	isBreathing[player] = true
 	playerData[player] = { score = 0 }
 
 	for round = 1, TOTAL_ROUNDS do
