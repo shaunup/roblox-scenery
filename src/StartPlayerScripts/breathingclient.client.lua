@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local BreathingEvent = ReplicatedStorage:WaitForChild("BreathingEvent")
+local UserInputService = game:GetService("UserInputService")
 
 local player = game.Players.LocalPlayer
 local gui = player.PlayerGui:WaitForChild("BreathingGui")
@@ -46,6 +47,7 @@ end
 BreathingEvent.OnClientEvent:Connect(function(phase, duration)
 	if phase == "Inhale" or phase == "Exhale" then
 		gui.Enabled = true
+		UserInputService.ModalEnabled = true
 		countdownToken += 1 -- invalidates any previous countdown immediately
 		animateBubble(phase, duration)
 		task.spawn(startCountdown, duration, countdownToken) -- passes current token
@@ -57,6 +59,7 @@ BreathingEvent.OnClientEvent:Connect(function(phase, duration)
 		scoreLabel.Text = "Score: " .. tostring(duration)
 		task.wait(3)
 		gui.Enabled = false
+		UserInputService.ModalEnabled = false
 	end
 end)
 
