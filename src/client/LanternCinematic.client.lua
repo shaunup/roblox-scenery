@@ -601,7 +601,7 @@ local function runCinematic(data)
 
     -- ── BACKGROUND MUSIC (starts as sky fills, plays through the whole show) ────
     local bgMusic = Instance.new("Sound")
-    bgMusic.SoundId  = "rbxassetid://139090690031825"
+    bgMusic.SoundId  = "rbxassetid://140171290131708"
     bgMusic.Volume   = 0
     bgMusic.Looped   = true
     bgMusic.Parent   = Workspace

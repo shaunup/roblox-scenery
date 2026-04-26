@@ -64,7 +64,7 @@ elseif phase == "End" then
     countdownToken += 1
     phaseLabel.Text = "Well done!"
     timerLabel.Text = ""
-    -- scoreLabel.Text = "Score: " .. tostring(duration) .. "\n🗒️ Paper added to inventory!"  -- ← update this
+    scoreLabel.Text = "Score: " .. tostring(duration) .. "\n🗒️ Paper added to inventory!"  -- ← update this
     task.wait(3)
     gui.Enabled = false
     unfreezePlayer()
