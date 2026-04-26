@@ -23,7 +23,7 @@ local Workspace         = game:GetService("Workspace")
 
 -- ═══════════════════════════════════════════════════════════════
 --  POSITION – change this one line to move the whole station
-local JIGSAW_POS = Vector3.new(-0.463, 7.75, -130.0)
+local JIGSAW_POS = Vector3.new(30.63, 2.75, -50.0)
 -- ═══════════════════════════════════════════════════════════════
 
 -- ── Remotes ───────────────────────────────────────────────────────────────────
