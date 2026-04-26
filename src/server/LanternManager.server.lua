@@ -42,8 +42,8 @@ local TweenService      = game:GetService("TweenService")
 
 -- ═══════════════════════════════════════════════════════════════
 --  POSITIONS  – change these to match your terrain
-local SHOP_POS    = Vector3.new( 20,  7.75,  -80)    -- lantern shop stall
-local RELEASE_POS = Vector3.new( -0.463, 7.75, -150)  -- dock / pond edge
+local SHOP_POS    = Vector3.new(-129.39, 4.375, -48.147)    -- lantern shop stall
+local RELEASE_POS = Vector3.new( 186.474, 4.8, -37.147)  -- dock / pond edge
 -- ═══════════════════════════════════════════════════════════════
 
 -- ── Remotes ───────────────────────────────────────────────────────────────────
@@ -155,13 +155,13 @@ local function buildShop()
         CFrame=CFrame.new(p + Vector3.new(0, 6.2, -1.8)),
         BrickColor=BrickColor.new("Bright red"), Material=Enum.Material.SmoothPlastic,
     })
-    local bg = Instance.new("BillboardGui", sign)
-    bg.Size = UDim2.new(0, 320, 0, 70); bg.StudsOffset = Vector3.new(0, 0.5, 0)
-    local lbl = Instance.new("TextLabel", bg)
-    lbl.Size = UDim2.new(1,0,1,0); lbl.BackgroundTransparency = 1
-    lbl.Text = "🏮  Lantern Shop  🏮"
-    lbl.TextColor3 = Color3.fromRGB(255, 240, 180)
-    lbl.TextScaled = true; lbl.Font = Enum.Font.GothamBold
+    -- local bg = Instance.new("BillboardGui", sign)
+    -- bg.Size = UDim2.new(0, 320, 0, 70); bg.StudsOffset = Vector3.new(0, 0.5, 0)
+    -- local lbl = Instance.new("TextLabel", bg)
+    -- lbl.Size = UDim2.new(1,0,1,0); lbl.BackgroundTransparency = 1
+    -- lbl.Text = "🏮  Lantern Shop  🏮"
+    -- lbl.TextColor3 = Color3.fromRGB(255, 240, 180)
+    -- lbl.TextScaled = true; lbl.Font = Enum.Font.GothamBold
 
     -- ProximityPrompt trigger
     local trigger = makePart(f, {
@@ -238,15 +238,15 @@ local function buildReleaseSite()
         CFrame=CFrame.new(p + Vector3.new(0, 2.5, -4.2)),
         BrickColor=BrickColor.new("Reddish brown"), Material=Enum.Material.Wood,
     })
-    local bg = Instance.new("BillboardGui", signPost)
-    bg.Size        = UDim2.new(0, 340, 0, 80)
-    bg.StudsOffset = Vector3.new(0, 4, 0)
-    bg.AlwaysOnTop = false
-    local lbl = Instance.new("TextLabel", bg)
-    lbl.Size = UDim2.new(1,0,1,0); lbl.BackgroundTransparency = 1
-    lbl.Text = "🏮  Lantern Release  🏮\nStand here to release your lantern"
-    lbl.TextColor3 = Color3.fromRGB(255, 230, 140)
-    lbl.TextScaled = true; lbl.Font = Enum.Font.GothamBold
+    -- local bg = Instance.new("BillboardGui", signPost)
+    -- bg.Size        = UDim2.new(0, 340, 0, 80)
+    -- bg.StudsOffset = Vector3.new(0, 4, 0)
+    -- bg.AlwaysOnTop = false
+    -- local lbl = Instance.new("TextLabel", bg)
+    -- lbl.Size = UDim2.new(1,0,1,0); lbl.BackgroundTransparency = 1
+    -- lbl.Text = "🏮  Lantern Release  🏮\nStand here to release your lantern"
+    -- lbl.TextColor3 = Color3.fromRGB(255, 230, 140)
+    -- lbl.TextScaled = true; lbl.Font = Enum.Font.GothamBold
 
     -- ProximityPrompt so the player gets a clear "you're in the right spot" cue
     -- (the proximity poll will still fire LanternSiteReached, this is extra clarity)

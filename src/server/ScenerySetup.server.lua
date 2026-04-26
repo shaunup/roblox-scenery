@@ -17,7 +17,7 @@ local Lighting  = game:GetService("Lighting")
 -- 1. LIGHTING  – early twilight, moon just risen
 -- ─────────────────────────────────────────────────────────
 local function setupLighting()
-    Lighting.ClockTime          = 19.6        -- 7:36 PM – dusk, moon visible
+    Lighting.ClockTime          = 17.9        -- 7:36 PM – dusk, moon visible
     Lighting.GeographicLatitude = 45
     Lighting.Brightness         = 0.9
     Lighting.GlobalShadows      = true
@@ -38,7 +38,7 @@ local function setupLighting()
     atmo.Color      = Color3.fromRGB(80, 60, 120)   -- deep violet dusk
     atmo.Decay      = Color3.fromRGB(20, 15, 40)
     atmo.Glare      = 0.05
-    atmo.Haze       = 1.2
+    atmo.Haze       = 0
 
     local cc = Instance.new("ColorCorrectionEffect", Lighting)
     cc.Brightness = -0.04
@@ -46,10 +46,10 @@ local function setupLighting()
     cc.Saturation = 0.05
     cc.TintColor  = Color3.fromRGB(210, 200, 255)   -- cool lavender cast
 
-    local bloom = Instance.new("BloomEffect", Lighting)
-    bloom.Intensity = 0.7
-    bloom.Size      = 24
-    bloom.Threshold = 0.88
+    -- local bloom = Instance.new("BloomEffect", Lighting)
+    -- bloom.Intensity = 0.7
+    -- bloom.Size      = 24
+    -- bloom.Threshold = 0.88
 
     local sunRays = Instance.new("SunRaysEffect", Lighting)
     sunRays.Intensity = 0.08

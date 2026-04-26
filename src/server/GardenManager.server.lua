@@ -15,7 +15,7 @@ local TweenService      = game:GetService("TweenService")
 
 -- ═══════════════════════════════════════════════════════════════
 --  POSITION – change this to move the entire garden
-local GARDEN_POS = Vector3.new(-3.463, 1.75, -102.296)
+local GARDEN_POS = Vector3.new(5.5, 3.375, -124.625)
 -- ═══════════════════════════════════════════════════════════════
 
 -- ── Remotes (re-use existing folder, add garden remotes) ─────────────────────
@@ -109,15 +109,15 @@ local function buildGarden()
     addLight(strLight, 0.65, 16, Color3.fromRGB(255, 220, 130))
 
     -- Billboard sign on arch
-    local bg = Instance.new("BillboardGui", archTop)
-    bg.Size        = UDim2.new(0, 280, 0, 60)
-    bg.StudsOffset = Vector3.new(0, 2.5, 0)
-    bg.AlwaysOnTop = false
-    local lbl = Instance.new("TextLabel", bg)
-    lbl.Size = UDim2.new(1,0,1,0); lbl.BackgroundTransparency = 1
-    lbl.Text = "🌸  Garden of Gratitude  🌸"
-    lbl.TextColor3 = Color3.fromRGB(255, 220, 180)
-    lbl.TextScaled = true; lbl.Font = Enum.Font.GothamBold
+    -- local bg = Instance.new("BillboardGui", archTop)
+    -- bg.Size        = UDim2.new(0, 280, 0, 60)
+    -- bg.StudsOffset = Vector3.new(0, 2.5, 0)
+    -- bg.AlwaysOnTop = false
+    -- local lbl = Instance.new("TextLabel", bg)
+    -- lbl.Size = UDim2.new(1,0,1,0); lbl.BackgroundTransparency = 1
+    -- lbl.Text = "🌸  Garden of Gratitude  🌸"
+    -- lbl.TextColor3 = Color3.fromRGB(255, 220, 180)
+    -- lbl.TextScaled = true; lbl.Font = Enum.Font.GothamBold
 
     -- 3 raised garden beds
     local bedColors = { "Reddish brown", "Reddish brown", "Reddish brown" }

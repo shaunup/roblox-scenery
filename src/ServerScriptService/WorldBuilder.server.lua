@@ -119,7 +119,7 @@ local fMountains= folder("Mountains")
 local fTrail    = folder("Trail")
 local fBreath   = folder("BreathingMilestone")
 local fBonfire  = folder("Bonfire")
-local fPond     = folder("GlowPond")
+-- local fPond     = folder("GlowPond")
 local fDeco     = folder("Decorations")
 
 -- ── LIGHTING / SKY ────────────────────────────────────────────────────────────
@@ -132,7 +132,7 @@ Lighting.ColorShift_Top   = Color3.fromRGB(255, 130, 60)
 Lighting.FogColor         = Color3.fromRGB(50, 35, 80)
 Lighting.FogStart         = 200
 Lighting.FogEnd           = 600
-Lighting.ClockTime        = 18   -- deep twilight
+Lighting.ClockTime        = 17.9   -- deep twilight
 Lighting.GeographicLatitude = 30
 
 -- Atmosphere
@@ -142,7 +142,7 @@ atmo.Offset      = 0.18
 atmo.Color       = Color3.fromRGB(200, 100, 60)
 atmo.Decay       = Color3.fromRGB(90, 50, 110)
 atmo.Glare       = 0.15
-atmo.Haze        = 1.8
+atmo.Haze        = 0
 atmo.Parent      = Lighting
 
 -- Sky
@@ -158,11 +158,11 @@ sky.StarCount = 4000
 sky.Parent    = Lighting
 
 -- Bloom + ColorCorrection for cinematic feel
-local bloom = Instance.new("BloomEffect")
-bloom.Intensity  = 0.6
-bloom.Size       = 24
-bloom.Threshold  = 0.9
-bloom.Parent     = Lighting
+-- local bloom = Instance.new("BloomEffect")
+-- bloom.Intensity  = 0.6
+-- bloom.Size       = 24
+-- bloom.Threshold  = 0.9
+-- bloom.Parent     = Lighting
 
 local cc = Instance.new("ColorCorrectionEffect")
 cc.Saturation = 0.2
@@ -171,10 +171,10 @@ cc.Brightness = 0.1
 cc.Contrast   = 0.12
 cc.Parent     = Lighting
 
-local bloom = Instance.new("BloomEffect", Lighting)
-    bloom.Intensity = 1.2
-    bloom.Size      = 36
-    bloom.Threshold = 0.85
+-- local bloom = Instance.new("BloomEffect", Lighting)
+--     bloom.Intensity = 1.2
+--     bloom.Size      = 36
+--     bloom.Threshold = 0.85
 
 -- Sun-glow / Blur
 local blur = Instance.new("BlurEffect")
@@ -216,129 +216,129 @@ end
 
 -- ── SUNSET GLOW PLANE (far horizon) ──────────────────────────────────────────
 
-local horizonGlow = part(fSky, {
-    Name        = "HorizonGlow",
-    Size        = Vector3.new(1200, 60, 4),
-    CFrame      = CFrame.new(0, 40, -500),
-    BrickColor  = BrickColor.new("Deep orange"),
-    Material    = Enum.Material.Neon,
-    Transparency= 0.55,
-    CastShadow  = false,
-    CanCollide  = false,
-})
+-- local horizonGlow = part(fSky, {
+--     Name        = "HorizonGlow",
+--     Size        = Vector3.new(1200, 60, 4),
+--     CFrame      = CFrame.new(0, 40, -500),
+--     BrickColor  = BrickColor.new("Deep orange"),
+--     Material    = Enum.Material.Neon,
+--     Transparency= 0.55,
+--     CastShadow  = false,
+--     CanCollide  = false,
+-- })
 
-local horizonGlow2 = part(fSky, {
-    Name        = "HorizonGlow2",
-    Size        = Vector3.new(1200, 30, 4),
-    CFrame      = CFrame.new(0, 65, -498),
-    BrickColor  = BrickColor.new("Bright orange"),
-    Material    = Enum.Material.Neon,
-    Transparency= 0.72,
-    CastShadow  = false,
-    CanCollide  = false,
-})
+-- local horizonGlow2 = part(fSky, {
+--     Name        = "HorizonGlow2",
+--     Size        = Vector3.new(1200, 30, 4),
+--     CFrame      = CFrame.new(0, 65, -498),
+--     BrickColor  = BrickColor.new("Bright orange"),
+--     Material    = Enum.Material.Neon,
+--     Transparency= 0.72,
+--     CastShadow  = false,
+--     CanCollide  = false,
+-- })
 
-local function buildPondGlow(folder)
-    -- Thin neon disc sitting on the water surface – the main glow source
-    local glowDisc = Instance.new("Part", folder)
-    glowDisc.Name          = "PondGlow2"
-    glowDisc.Shape         = Enum.PartType.Cylinder
-    glowDisc.Size          = Vector3.new(0.3, 300, 300)
-    glowDisc.CFrame        = CFrame.new(200, 0.15, -57) --* CFrame.Angles(0, 90, 90)
-    glowDisc.Orientation    = Vector3.new(0, 90, 90)
-    glowDisc.Anchored      = true
-    glowDisc.CanCollide    = false
-    glowDisc.CastShadow    = false
-    glowDisc.Material      = Enum.Material.Neon
-    glowDisc.Color         = Color3.fromRGB(245, 164, 66)   -- icy cyan glow
-    glowDisc.Transparency  = 0.35
+-- local function buildGlow(folder)
+--     -- Thin neon disc sitting on the water surface – the main glow source
+--     local glowDisc = Instance.new("Part", folder)
+--     glowDisc.Name          = "PondGlow2"
+--     glowDisc.Shape         = Enum.PartType.Cylinder
+--     glowDisc.Size          = Vector3.new(0.3, 300, 300)
+--     glowDisc.CFrame        = CFrame.new(200, 0.15, -57) --* CFrame.Angles(0, 90, 90)
+--     glowDisc.Orientation    = Vector3.new(0, 90, 90)
+--     glowDisc.Anchored      = true
+--     glowDisc.CanCollide    = false
+--     glowDisc.CastShadow    = faPondlse
+--     glowDisc.Material      = Enum.Material.Neon
+--     glowDisc.Color         = Color3.fromRGB(245, 164, 66)   -- icy cyan glow
+--     glowDisc.Transparency  = 0.35
 
-    -- Central strong light – illuminates the whole area
-    local centreLight = Instance.new("PointLight", glowDisc)
-    centreLight.Color      = Color3.fromRGB(100, 220, 255)
-    centreLight.Brightness = 6
-    centreLight.Range      = 120
-    centreLight.Shadows    = true
+--     -- Central strong light – illuminates the whole area
+--     local centreLight = Instance.new("PointLight", glowDisc)
+--     centreLight.Color      = Color3.fromRGB(100, 220, 255)
+--     centreLight.Brightness = 6
+--     centreLight.Range      = 120
+--     centreLight.Shadows    = true
 
-    -- Ring of softer accent lights around the pond edge for depth
-    local ACCENT_COUNT  = 8
-    local ACCENT_RADIUS = 34
-    for i = 1, ACCENT_COUNT do
-        local angle = (i / ACCENT_COUNT) * math.pi * 2
-        local ax = math.cos(angle) * ACCENT_RADIUS
-        local az = math.sin(angle) * ACCENT_RADIUS
+--     -- Ring of softer accent lights around the pond edge for depth
+--     local ACCENT_COUNT  = 8
+--     local ACCENT_RADIUS = 34
+--     for i = 1, ACCENT_COUNT do
+--         local angle = (i / ACCENT_COUNT) * math.pi * 2
+--         local ax = math.cos(angle) * ACCENT_RADIUS
+--         local az = math.sin(angle) * ACCENT_RADIUS
 
-        local accentPart = Instance.new("Part", folder)
-        accentPart.Size        = Vector3.new(0.5, 0.5, 0.5)
-        accentPart.CFrame      = CFrame.new(200, 0.15, -57)
-        accentPart.Anchored    = true
-        accentPart.CanCollide  = false
-        accentPart.CastShadow  = false
-        accentPart.Material    = Enum.Material.Neon
-        accentPart.Color       = Color3.fromRGB(120, 230, 255)
-        accentPart.Transparency = 0.5
+--         local accentPart = Instance.new("Part", folder)
+--         accentPart.Size        = Vector3.new(0.5, 0.5, 0.5)
+--         accentPart.CFrame      = CFrame.new(200, 0.15, -57)
+--         accentPart.Anchored    = true
+--         accentPart.CanCollide  = false
+--         accentPart.CastShadow  = false
+--         accentPart.Material    = Enum.Material.Neon
+--         accentPart.Color       = Color3.fromRGB(120, 230, 255)
+--         accentPart.Transparency = 0.5
 
-        local aLight = Instance.new("PointLight", accentPart)
-        aLight.Color      = Color3.fromRGB(245, 164, 66)
-        aLight.Brightness = 2.2
-        aLight.Range      = 40
-        aLight.Shadows    = false
-    end
+--         local aLight = Instance.new("PointLight", accentPart)
+--         aLight.Color      = Color3.fromRGB(245, 164, 66)
+--         aLight.Brightness = 2.2
+--         aLight.Range      = 40
+--         aLight.Shadows    = false
+--     end
 
-    -- Ripple / shimmer particle emitter on the pond surface
-    local emitPart = Instance.new("Part", folder)
-    emitPart.Size        = Vector3.new(1, 1, 1)
-    emitPart.CFrame      = CFrame.new(200, 0.15, -57)
-    emitPart.Anchored    = true
-    emitPart.CanCollide  = false
-    emitPart.CastShadow  = false
-    emitPart.Transparency = 1
+--     -- Ripple / shimmer particle emitter on the pond surface
+--     local emitPart = Instance.new("Part", folder)
+--     emitPart.Size        = Vector3.new(1, 1, 1)
+--     emitPart.CFrame      = CFrame.new(200, 0.15, -57)
+--     emitPart.Anchored    = true
+--     emitPart.CanCollide  = false
+--     emitPart.CastShadow  = false
+--     emitPart.Transparency = 1
 
-    local shimmer = Instance.new("ParticleEmitter", emitPart)
-    shimmer.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0,   Color3.fromRGB(150, 240, 255)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 255, 255)),
-        ColorSequenceKeypoint.new(1,   Color3.fromRGB(100, 200, 255)),
-    })
-    shimmer.LightEmission  = 1
-    shimmer.LightInfluence = 0
-    shimmer.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0,   0),
-        NumberSequenceKeypoint.new(0.3, 0.35),
-        NumberSequenceKeypoint.new(1,   0),
-    })
-    shimmer.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0,   1),
-        NumberSequenceKeypoint.new(0.2, 0.15),
-        NumberSequenceKeypoint.new(0.8, 0.15),
-        NumberSequenceKeypoint.new(1,   1),
-    })
-    shimmer.Lifetime       = NumberRange.new(2, 5)
-    shimmer.Rate           = 35
-    shimmer.Speed          = NumberRange.new(0.2, 1.2)
-    shimmer.SpreadAngle    = Vector2.new(60, 60)
-    shimmer.RotSpeed       = NumberRange.new(-30, 30)
-    shimmer.Rotation       = NumberRange.new(0, 360)
-    shimmer.EmissionDirection = Enum.NormalId.Top
+--     local shimmer = Instance.new("ParticleEmitter", emitPart)
+--     shimmer.Color = ColorSequence.new({
+--         ColorSequenceKeypoint.new(0,   Color3.fromRGB(150, 240, 255)),
+--         ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 255, 255)),
+--         ColorSequenceKeypoint.new(1,   Color3.fromRGB(100, 200, 255)),
+--     })
+--     shimmer.LightEmission  = 1
+--     shimmer.LightInfluence = 0
+--     shimmer.Size = NumberSequence.new({
+--         NumberSequenceKeypoint.new(0,   0),
+--         NumberSequenceKeypoint.new(0.3, 0.35),
+--         NumberSequenceKeypoint.new(1,   0),
+--     })
+--     shimmer.Transparency = NumberSequence.new({
+--         NumberSequenceKeypoint.new(0,   1),
+--         NumberSequenceKeypoint.new(0.2, 0.15),
+--         NumberSequenceKeypoint.new(0.8, 0.15),
+--         NumberSequenceKeypoint.new(1,   1),
+--     })
+--     shimmer.Lifetime       = NumberRange.new(2, 5)
+--     shimmer.Rate           = 35
+--     shimmer.Speed          = NumberRange.new(0.2, 1.2)
+--     shimmer.SpreadAngle    = Vector2.new(60, 60)
+--     shimmer.RotSpeed       = NumberRange.new(-30, 30)
+--     shimmer.Rotation       = NumberRange.new(0, 360)
+--     shimmer.EmissionDirection = Enum.NormalId.Top
 
-    -- Spread emitter over the whole pond area
-    local spreadEmit = Instance.new("Part", folder)
-    spreadEmit.Size        = Vector3.new(70, 0.1, 70)
-    spreadEmit.CFrame      = CFrame.new(200, 0.15, -57)
-    spreadEmit.Anchored    = true
-    spreadEmit.CanCollide  = false
-    spreadEmit.CastShadow  = false
-    spreadEmit.Transparency = 1
+--     -- Spread emitter over the whole pond area
+--     local spreadEmit = Instance.new("Part", folder)
+--     spreadEmit.Size        = Vector3.new(70, 0.1, 70)
+--     spreadEmit.CFrame      = CFrame.new(200, 0.15, -57)
+--     spreadEmit.Anchored    = true
+--     spreadEmit.CanCollide  = false
+--     spreadEmit.CastShadow  = false
+--     spreadEmit.Transparency = 1
 
-    local shimmer2 = shimmer:Clone()
-    shimmer2.Rate   = 20
-    shimmer2.Parent = spreadEmit
-end
-local folder = Instance.new("Folder", Workspace)
-folder.Name  = "GlowingPondScene"
--- buildTerrain()
-buildPondGlow(folder)
--- buildScenery(folder)
--- setupSpawn()
+--     local shimmer2 = shimmer:Clone()
+--     shimmer2.Rate   = 20
+--     shimmer2.Parent = spreadEmit
+-- end
+-- local folder = Instance.new("Folder", Workspace)
+-- folder.Name  = "GlowingPondScene"
+-- -- buildTerrain()
+-- -- buildPondGlow(folder)
+-- -- buildScenery(folder)
+-- -- setupSpawn()
 
-print("[GlowingPondScene] Scene ready.")
+-- print("[GlowingPondScene] Scene ready.")

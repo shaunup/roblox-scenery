@@ -23,7 +23,7 @@ local Workspace         = game:GetService("Workspace")
 
 -- ═══════════════════════════════════════════════════════════════
 --  POSITION – change this one line to move the whole station
-local JIGSAW_POS = Vector3.new(-0.463, 7.75, -130.0)
+local JIGSAW_POS = Vector3.new(24.791, 4.375, -20.5)
 -- ═══════════════════════════════════════════════════════════════
 
 -- ── Remotes ───────────────────────────────────────────────────────────────────
@@ -132,7 +132,7 @@ local function buildStation()
         Material=Enum.Material.Neon, CanCollide=false, Transparency=0.5,
     })
     addLight(tablet, 0.7, 16, Color3.fromRGB(120, 190, 255))
-    addBillboard(tablet, "✦  Wisdom Puzzle  ✦", Color3.fromRGB(190, 225, 255), Vector3.new(0, 4.5, 0))
+    -- addBillboard(tablet, "✦  Wisdom Puzzle  ✦", Color3.fromRGB(190, 225, 255), Vector3.new(0, 4.5, 0))
 
     -- Two stone benches either side
     for _, bx in ipairs({-5.5, 5.5}) do
