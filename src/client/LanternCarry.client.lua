@@ -35,29 +35,37 @@ local sitePromptShown = false
 local lanternPart     = nil   -- the held lantern Part
 
 -- ── Carried lantern (visual, client-only) ─────────────────────────────────────
+--  Design notes:
+--  • We use Heartbeat to drive the lantern CFrame every frame rather than
+--    WeldConstraint. WeldConstraint locks the offset at creation time and
+--    fights a manual CFrame loop, causing the part to jitter or disappear
+--    inside the arm. Pure Heartbeat is simpler and more reliable.
+--  • The part is Anchored=true so physics never touches it.
+--  • We parent it to Workspace (not the character) so it doesn't inherit
+--    character network ownership issues on the client.
 local function spawnCarriedLantern()
     character = player.Character or player.CharacterAdded:Wait()
-    local hand = character:WaitForChild("RightHand", 5)
-            or character:WaitForChild("Right Arm", 5)
+
+    -- Prefer R15 RightHand; fall back to R6 "Right Arm"
+    local hand = character:FindFirstChild("RightHand")
+             or character:FindFirstChild("Right Arm")
+    if not hand then
+        -- Last resort: use HumanoidRootPart so something always shows
+        hand = character:FindFirstChild("HumanoidRootPart")
+    end
     if not hand then return end
 
     lanternPart = Instance.new("Part")
-    lanternPart.Name        = "CarriedLantern"
-    lanternPart.Size        = Vector3.new(0.9, 1.5, 0.9)
-    lanternPart.Anchored    = false
-    lanternPart.CanCollide  = false
-    lanternPart.CastShadow  = false
-    lanternPart.Material    = Enum.Material.Neon
-    lanternPart.Color       = Color3.fromRGB(255, 210, 80)
+    lanternPart.Name         = "CarriedLantern"
+    lanternPart.Size         = Vector3.new(0.9, 1.5, 0.9)
+    lanternPart.Anchored     = true   -- physics off; we drive CFrame manually
+    lanternPart.CanCollide   = false
+    lanternPart.CastShadow   = false
+    lanternPart.Material     = Enum.Material.Neon
+    lanternPart.Color        = Color3.fromRGB(255, 210, 80)
     lanternPart.Transparency = 0.15
-    lanternPart.Parent      = character
-
-    -- Attach via WeldConstraint so it moves with the hand
-    local weld         = Instance.new("WeldConstraint", lanternPart)
-    weld.Part0         = lanternPart
-    weld.Part1         = hand
-    -- Position the lantern above the hand
-    lanternPart.CFrame = hand.CFrame * CFrame.new(0, 1.4, 0)
+    lanternPart.CFrame       = hand.CFrame * CFrame.new(0.3, 1.6, 0)
+    lanternPart.Parent       = Workspace   -- parent to Workspace, not character
 
     -- Glow
     local pl = Instance.new("PointLight", lanternPart)
@@ -66,26 +74,29 @@ local function spawnCarriedLantern()
     pl.Range      = 18
     pl.Shadows    = false
 
-    -- Flame effect
+    -- Flame
     local fire = Instance.new("Fire", lanternPart)
     fire.Heat           = 2
     fire.Size           = 0.4
     fire.Color          = Color3.fromRGB(255, 170, 40)
     fire.SecondaryColor = Color3.fromRGB(255, 80, 20)
 
-    -- Gentle float bob
-    task.spawn(function()
-        local t = 0
-        local bobConn
-        bobConn = RunService.Heartbeat:Connect(function(dt)
-            if not lanternPart or not lanternPart.Parent then
-                bobConn:Disconnect(); return
-            end
-            t = t + dt
-            -- Nudge the CFrame offset for a subtle up-down
-            lanternPart.CFrame = hand.CFrame
-                * CFrame.new(0.3, 1.4 + math.sin(t * 2) * 0.08, 0)
-        end)
+    -- Drive position every frame — this IS the attachment mechanism
+    local t = 0
+    local bobConn
+    bobConn = RunService.Heartbeat:Connect(function(dt)
+        if not lanternPart or not lanternPart.Parent then
+            bobConn:Disconnect(); return
+        end
+        -- Re-fetch hand each frame in case character respawned
+        local h = character:FindFirstChild("RightHand")
+               or character:FindFirstChild("Right Arm")
+               or character:FindFirstChild("HumanoidRootPart")
+        if not h then return end
+        t = t + dt
+        -- Offset: slightly to the right and above the hand, gentle bob
+        lanternPart.CFrame = h.CFrame
+            * CFrame.new(0.3, 1.6 + math.sin(t * 2.2) * 0.07, 0)
     end)
 end
 
