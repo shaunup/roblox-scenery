@@ -4,14 +4,24 @@
 
   Contents:
     1. Lighting  – deep twilight sky, stars, moon, colour effects
-    2. Terrain   – flat grassy ground, surrounding hills, glowing pond
-    3. Pond glow – neon water surface + PointLights + particle shimmer
+    2. Terrain   – flat grassy ground, surrounding hills
+                   NOTE: terrain:Clear() removed – existing lake is preserved
+    3. Pond glow – layered translucent water surface, breathable PointLights,
+                   slow-drift bioluminescent particles, animated pulse tweens
     4. Scenery   – rock clusters, flowers, reeds, firefly particles
     5. Spawn     – SpawnLocation on the bank of the pond
 ]]
 
-local Workspace = game:GetService("Workspace")
-local Lighting  = game:GetService("Lighting")
+local Workspace    = game:GetService("Workspace")
+local Lighting     = game:GetService("Lighting")
+local TweenService = game:GetService("TweenService")
+
+-- ── Pond centre / radius (matches existing terrain lake) ─────────────────────
+-- Adjust POND_X / POND_Z if the lake sits at a different position.
+local POND_X      = 0
+local POND_Y      = 0       -- water surface Y in your terrain
+local POND_Z      = 0
+local POND_RADIUS = 38      -- approximate radius of your lake in studs
 
 -- ─────────────────────────────────────────────────────────
 -- 1. LIGHTING  (deep twilight – just after sunset)
@@ -49,11 +59,12 @@ local function setupLighting()
     cc.Saturation = -0.08
     cc.TintColor  = Color3.fromRGB(200, 210, 255)    -- cool blue night tint
 
-    -- Bloom makes the glowing pond and fireflies pop
+    -- Bloom: gentle enough not to blow out the scene, strong enough for the
+    -- pond glow and lanterns to feel magical
     local bloom = Instance.new("BloomEffect", Lighting)
-    bloom.Intensity = 1.2
-    bloom.Size      = 36
-    bloom.Threshold = 0.85
+    bloom.Intensity = 0.7
+    bloom.Size      = 28
+    bloom.Threshold = 0.92
 end
 
 -- ─────────────────────────────────────────────────────────
@@ -61,7 +72,7 @@ end
 -- ─────────────────────────────────────────────────────────
 local function buildTerrain()
     local terrain = Workspace.Terrain
-    terrain:Clear()
+    -- NOTE: terrain:Clear() intentionally omitted – existing lake is kept.
 
     -- Flat grassy ground plane
     terrain:FillBlock(
@@ -103,131 +114,277 @@ local function buildTerrain()
         terrain:FillBall(Vector3.new(cx, ht - 4, cz), rad * 0.18, Enum.Material.Rock)
     end
 
-    -- Pond basin – scoop out a shallow bowl and fill with water
-    -- First dig out a bowl shape
-    local POND_Y      = 0
-    local POND_RADIUS = 38
-    terrain:FillCylinder(
-        CFrame.new(0, POND_Y - 3, 0),
-        6, POND_RADIUS,
-        Enum.Material.Mud
-    )
-    -- Fill with water slightly above mud floor
-    terrain:FillCylinder(
-        CFrame.new(0, POND_Y - 1, 0),
-        4, POND_RADIUS,
-        Enum.Material.Water
-    )
-    -- Muddy / sandy bank ring around the pond
-    terrain:FillCylinder(
-        CFrame.new(0, POND_Y - 0.5, 0),
-        3, POND_RADIUS + 8,
-        Enum.Material.Mud
-    )
-    terrain:FillCylinder(
-        CFrame.new(0, POND_Y - 0.4, 0),
-        3, POND_RADIUS,     -- cut grass back out inside the bank
-        Enum.Material.Water
-    )
+    -- Pond basin: skipped – existing terrain lake is used as-is.
+    -- To regenerate the basin, uncomment the block below and set POND_RADIUS above.
+    --[[
+    terrain:FillCylinder(CFrame.new(POND_X, POND_Y - 3, POND_Z), 6, POND_RADIUS, Enum.Material.Mud)
+    terrain:FillCylinder(CFrame.new(POND_X, POND_Y - 1, POND_Z), 4, POND_RADIUS, Enum.Material.Water)
+    terrain:FillCylinder(CFrame.new(POND_X, POND_Y - 0.5, POND_Z), 3, POND_RADIUS + 8, Enum.Material.Mud)
+    terrain:FillCylinder(CFrame.new(POND_X, POND_Y - 0.4, POND_Z), 3, POND_RADIUS, Enum.Material.Water)
+    --]]
 end
 
 -- ─────────────────────────────────────────────────────────
--- 3. GLOWING POND SURFACE & LIGHTS
+-- 3. GLOWING POND – natural bioluminescent look
 -- ─────────────────────────────────────────────────────────
+--[[
+  Design goals:
+  • No single hard-edged neon disc – instead several semi-transparent layers
+    at slightly different radii and heights produce a soft, depth-ful glow
+  • PointLights are dim individually; their overlap creates brightness
+    naturally, just like bioluminescence
+  • Particles drift UPWARD very slowly (rising mist/glow wisps), not
+    scattering sideways like sparks
+  • A TweenService "breathing" pulse gently oscillates transparency of each
+    layer so the whole pond feels alive
+]]
+
 local function buildPondGlow(folder)
-    -- Thin neon disc sitting on the water surface – the main glow source
-    local glowDisc = Instance.new("Part", folder)
-    glowDisc.Name          = "PondGlow"
-    glowDisc.Shape         = Enum.PartType.Cylinder
-    glowDisc.Size          = Vector3.new(0.3, 74, 74)
-    glowDisc.CFrame        = CFrame.new(0, 0.15, 0) * CFrame.Angles(0, 0, math.pi / 2)
-    glowDisc.Anchored      = true
-    glowDisc.CanCollide    = false
-    glowDisc.CastShadow    = false
-    glowDisc.Material      = Enum.Material.Neon
-    glowDisc.Color         = Color3.fromRGB(80, 210, 255)   -- icy cyan glow
-    glowDisc.Transparency  = 0.35
+    local cx, cy, cz = POND_X, POND_Y, POND_Z
+    local R           = POND_RADIUS
 
-    -- Central strong light – illuminates the whole area
-    local centreLight = Instance.new("PointLight", glowDisc)
-    centreLight.Color      = Color3.fromRGB(100, 220, 255)
-    centreLight.Brightness = 6
-    centreLight.Range      = 120
-    centreLight.Shadows    = true
-
-    -- Ring of softer accent lights around the pond edge for depth
-    local ACCENT_COUNT  = 8
-    local ACCENT_RADIUS = 34
-    for i = 1, ACCENT_COUNT do
-        local angle = (i / ACCENT_COUNT) * math.pi * 2
-        local ax = math.cos(angle) * ACCENT_RADIUS
-        local az = math.sin(angle) * ACCENT_RADIUS
-
-        local accentPart = Instance.new("Part", folder)
-        accentPart.Size        = Vector3.new(0.5, 0.5, 0.5)
-        accentPart.CFrame      = CFrame.new(ax, 0.4, az)
-        accentPart.Anchored    = true
-        accentPart.CanCollide  = false
-        accentPart.CastShadow  = false
-        accentPart.Material    = Enum.Material.Neon
-        accentPart.Color       = Color3.fromRGB(120, 230, 255)
-        accentPart.Transparency = 0.5
-
-        local aLight = Instance.new("PointLight", accentPart)
-        aLight.Color      = Color3.fromRGB(100, 200, 255)
-        aLight.Brightness = 2.2
-        aLight.Range      = 40
-        aLight.Shadows    = false
+    -- ── Helper: invisible anchor part for lights / particles ──────────────
+    local function anchor(x, y, z, sz)
+        sz = sz or Vector3.new(0.1, 0.1, 0.1)
+        local p = Instance.new("Part", folder)
+        p.Size        = sz
+        p.CFrame      = CFrame.new(x, y, z)
+        p.Anchored    = true
+        p.CanCollide  = false
+        p.CastShadow  = false
+        p.Transparency = 1
+        return p
     end
 
-    -- Ripple / shimmer particle emitter on the pond surface
-    local emitPart = Instance.new("Part", folder)
-    emitPart.Size        = Vector3.new(1, 1, 1)
-    emitPart.CFrame      = CFrame.new(0, 0.5, 0)
-    emitPart.Anchored    = true
-    emitPart.CanCollide  = false
-    emitPart.CastShadow  = false
-    emitPart.Transparency = 1
+    -- ── Helper: build one translucent neon water layer ────────────────────
+    local function waterLayer(name, radius, yOff, color, alpha)
+        local p = Instance.new("Part", folder)
+        p.Name        = name
+        p.Shape       = Enum.PartType.Cylinder
+        -- Cylinder's "height" axis is X when rotated 90° on Z
+        p.Size        = Vector3.new(0.25, radius * 2, radius * 2)
+        p.CFrame      = CFrame.new(cx, cy + yOff, cz)
+                      * CFrame.Angles(0, 0, math.pi / 2)
+        p.Anchored    = true
+        p.CanCollide  = false
+        p.CastShadow  = false
+        p.Material    = Enum.Material.Neon
+        p.Color       = color
+        p.Transparency = alpha
+        return p
+    end
 
-    local shimmer = Instance.new("ParticleEmitter", emitPart)
-    shimmer.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0,   Color3.fromRGB(150, 240, 255)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 255, 255)),
-        ColorSequenceKeypoint.new(1,   Color3.fromRGB(100, 200, 255)),
+    -- ── Helper: breathing tween on Transparency ───────────────────────────
+    local function breathe(part, alphaA, alphaB, period, offset)
+        -- stagger start so layers don't all pulse in sync
+        task.delay(offset or 0, function()
+            local ti = TweenInfo.new(
+                period / 2,
+                Enum.EasingStyle.Sine,
+                Enum.EasingDirection.InOut,
+                -1,   -- repeat forever
+                true  -- reverse (ping-pong)
+            )
+            TweenService:Create(part, ti, { Transparency = alphaB }):Play()
+        end)
+    end
+
+    -- ── Layer 1: deep-water base – wide, very translucent midnight blue ───
+    --   Sits just below surface; gives the pond its deep colour
+    local deep = waterLayer("PondDeep",
+        R * 0.96,       -- slightly inside pond edge
+        -0.05,          -- just below waterline
+        Color3.fromRGB(18, 80, 160),
+        0.82)
+    breathe(deep, 0.82, 0.88, 6, 0)
+
+    -- ── Layer 2: main bioluminescent surface glow – teal-cyan ─────────────
+    --   Floats exactly on the water surface; this is the "main" glow
+    local surface = waterLayer("PondSurface",
+        R * 0.88,
+        0.06,
+        Color3.fromRGB(60, 190, 230),
+        0.72)
+    breathe(surface, 0.72, 0.80, 5, 0.8)
+
+    -- ── Layer 3: inner bright ring – lighter aqua, smaller radius ─────────
+    --   Concentrates brightness toward the centre like moonlight on water
+    local inner = waterLayer("PondInner",
+        R * 0.55,
+        0.12,
+        Color3.fromRGB(110, 220, 245),
+        0.65)
+    breathe(inner, 0.65, 0.74, 4, 1.6)
+
+    -- ── Layer 4: central shimmer hotspot – near-white, small ──────────────
+    --   Simulates the direct moon reflection at the very centre
+    local hotspot = waterLayer("PondHotspot",
+        R * 0.22,
+        0.18,
+        Color3.fromRGB(190, 245, 255),
+        0.55)
+    breathe(hotspot, 0.55, 0.68, 3, 0.4)
+
+    -- ── Diffuse lighting: 3 low-brightness central lights ─────────────────
+    --   Spread across a small triangle so shadows look natural, not flat
+    local lightOffsets = {
+        Vector3.new(0,      1.5, 0),
+        Vector3.new(-R*0.3, 1.2, R*0.2),
+        Vector3.new( R*0.3, 1.2,-R*0.2),
+    }
+    for i, off in ipairs(lightOffsets) do
+        local lp = anchor(cx + off.X, cy + off.Y, cz + off.Z)
+        local pl = Instance.new("PointLight", lp)
+        pl.Color      = Color3.fromRGB(90, 210, 255)
+        pl.Brightness = 1.4           -- gentle – relies on overlap for total brightness
+        pl.Range      = R * 1.8
+        pl.Shadows    = (i == 1)      -- only the central one casts shadows
+    end
+
+    -- ── Edge lights: 6 around the perimeter, alternating warm/cool ────────
+    --   These light up reeds and rocks at the bank – crucial for depth
+    local edgeColors = {
+        Color3.fromRGB(80,  200, 255),   -- cool blue
+        Color3.fromRGB(120, 230, 200),   -- mint green
+        Color3.fromRGB(80,  200, 255),
+        Color3.fromRGB(100, 215, 240),
+        Color3.fromRGB(120, 230, 200),
+        Color3.fromRGB(80,  200, 255),
+    }
+    for i = 1, 6 do
+        local a  = (i / 6) * math.pi * 2
+        local ep = anchor(
+            cx + math.cos(a) * (R * 0.82),
+            cy + 0.4,
+            cz + math.sin(a) * (R * 0.82)
+        )
+        local el = Instance.new("PointLight", ep)
+        el.Color      = edgeColors[i]
+        el.Brightness = 0.9
+        el.Range      = 28
+        el.Shadows    = false
+    end
+
+    -- ── Rising mist wisps: slow upward drift, almost invisible ────────────
+    --   Particles move upward at near-zero speed — gives the impression
+    --   of the water "breathing" light into the air above it
+    local function addWispEmitter(ox, oz, rate, color)
+        local ep = anchor(cx + ox, cy + 0.3, cz + oz, Vector3.new(R*1.6, 0.2, R*1.6))
+        local pe = Instance.new("ParticleEmitter", ep)
+        pe.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0,   color),
+            ColorSequenceKeypoint.new(0.6, Color3.fromRGB(150, 230, 255)),
+            ColorSequenceKeypoint.new(1,   Color3.fromRGB(200, 245, 255)),
+        })
+        pe.LightEmission  = 1
+        pe.LightInfluence = 0
+        pe.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0,   0),
+            NumberSequenceKeypoint.new(0.15, 0.55),
+            NumberSequenceKeypoint.new(0.7,  0.30),
+            NumberSequenceKeypoint.new(1,   0),
+        })
+        pe.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0,   1),
+            NumberSequenceKeypoint.new(0.1, 0.60),
+            NumberSequenceKeypoint.new(0.5, 0.55),
+            NumberSequenceKeypoint.new(0.9, 0.80),
+            NumberSequenceKeypoint.new(1,   1),
+        })
+        pe.Lifetime          = NumberRange.new(5, 9)
+        pe.Rate              = rate
+        pe.Speed             = NumberRange.new(0.4, 1.0)   -- very slow rise
+        pe.SpreadAngle       = Vector2.new(12, 12)         -- nearly vertical
+        pe.RotSpeed          = NumberRange.new(-8, 8)
+        pe.Rotation          = NumberRange.new(0, 360)
+        pe.EmissionDirection = Enum.NormalId.Top
+        return pe
+    end
+
+    -- Main surface wisps (teal, sparse)
+    addWispEmitter(0, 0, 7, Color3.fromRGB(70, 200, 240))
+    -- Slightly warmer near the centre (moonlight warmth)
+    addWispEmitter(0, 0, 3, Color3.fromRGB(160, 235, 255))
+
+    -- ── Floating sparkle motes: rare, crisp bright points ─────────────────
+    --   NOT a carpet of sparks – just occasional glints on the water surface
+    local sparkPart = anchor(cx, cy + 0.2, cz, Vector3.new(R*1.8, 0.1, R*1.8))
+    local sparks    = Instance.new("ParticleEmitter", sparkPart)
+    sparks.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 250, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 230, 255)),
     })
-    shimmer.LightEmission  = 1
-    shimmer.LightInfluence = 0
-    shimmer.Size = NumberSequence.new({
+    sparks.LightEmission  = 1
+    sparks.LightInfluence = 0
+    sparks.Size = NumberSequence.new({
         NumberSequenceKeypoint.new(0,   0),
-        NumberSequenceKeypoint.new(0.3, 0.35),
+        NumberSequenceKeypoint.new(0.2, 0.18),
+        NumberSequenceKeypoint.new(0.8, 0.10),
         NumberSequenceKeypoint.new(1,   0),
     })
-    shimmer.Transparency = NumberSequence.new({
+    sparks.Transparency = NumberSequence.new({
         NumberSequenceKeypoint.new(0,   1),
-        NumberSequenceKeypoint.new(0.2, 0.15),
-        NumberSequenceKeypoint.new(0.8, 0.15),
+        NumberSequenceKeypoint.new(0.1, 0.0),
+        NumberSequenceKeypoint.new(0.85, 0.1),
         NumberSequenceKeypoint.new(1,   1),
     })
-    shimmer.Lifetime       = NumberRange.new(2, 5)
-    shimmer.Rate           = 35
-    shimmer.Speed          = NumberRange.new(0.2, 1.2)
-    shimmer.SpreadAngle    = Vector2.new(60, 60)
-    shimmer.RotSpeed       = NumberRange.new(-30, 30)
-    shimmer.Rotation       = NumberRange.new(0, 360)
-    shimmer.EmissionDirection = Enum.NormalId.Top
+    sparks.Lifetime          = NumberRange.new(1.5, 4)
+    sparks.Rate              = 4             -- rare: ~4 per second across the whole lake
+    sparks.Speed             = NumberRange.new(0, 0.3)
+    sparks.SpreadAngle       = Vector2.new(180, 180)
+    sparks.RotSpeed          = NumberRange.new(0, 0)
+    sparks.Rotation          = NumberRange.new(0, 360)
+    sparks.EmissionDirection = Enum.NormalId.Top
 
-    -- Spread emitter over the whole pond area
-    local spreadEmit = Instance.new("Part", folder)
-    spreadEmit.Size        = Vector3.new(70, 0.1, 70)
-    spreadEmit.CFrame      = CFrame.new(0, 0.3, 0)
-    spreadEmit.Anchored    = true
-    spreadEmit.CanCollide  = false
-    spreadEmit.CastShadow  = false
-    spreadEmit.Transparency = 1
+    -- ── Lily pads – organic shape, softer glow ─────────────────────────────
+    --   Removed Neon material; use SmoothPlastic with a dim PointLight instead
+    --   so they look like real plants catching the glow, not light sources
+    local rng       = Random.new(42)
+    local lilyData  = {
+        { 0.4,  8  }, { 1.1, 14 }, { 1.9, 22 },
+        { 2.8, 10  }, { 3.6, 18 }, { 4.5, 25 }, { 5.3, 12 },
+    }
+    for _, ld in ipairs(lilyData) do
+        local la, ldist = ld[1], ld[2]
+        local lx = cx + math.cos(la) * ldist
+        local lz = cz + math.sin(la) * ldist
+        local padR = rng:NextNumber(1.0, 2.4)
 
-    local shimmer2 = shimmer:Clone()
-    shimmer2.Rate   = 20
-    shimmer2.Parent = spreadEmit
+        local pad = Instance.new("Part", folder)
+        pad.Shape       = Enum.PartType.Cylinder
+        pad.Size        = Vector3.new(0.14, padR * 2, padR * 2)
+        pad.CFrame      = CFrame.new(lx, cy + 0.1, lz)
+                        * CFrame.Angles(0, rng:NextNumber(0, math.pi*2), math.pi/2)
+        pad.Anchored    = true
+        pad.CanCollide  = false
+        pad.CastShadow  = false
+        pad.Material    = Enum.Material.SmoothPlastic
+        pad.Color       = Color3.fromRGB(38, 110, 52)   -- dark swamp green
+        pad.Transparency = 0.0
+
+        -- Tiny warm point light underneath the pad: simulates glow seeping through
+        local padGlow = Instance.new("PointLight", pad)
+        padGlow.Color      = Color3.fromRGB(100, 230, 140)
+        padGlow.Brightness = 0.6
+        padGlow.Range      = 8
+        padGlow.Shadows    = false
+
+        -- Small flower on top
+        local flower = Instance.new("Part", folder)
+        flower.Shape       = Enum.PartType.Ball
+        flower.Size        = Vector3.new(0.5, 0.5, 0.5)
+        flower.CFrame      = CFrame.new(lx, cy + 0.35, lz)
+        flower.Anchored    = true
+        flower.CanCollide  = false
+        flower.CastShadow  = false
+        flower.Material    = Enum.Material.Neon
+        flower.Color       = Color3.fromRGB(220, 160, 255)  -- soft violet
+        flower.Transparency = 0.2
+        local fl = Instance.new("PointLight", flower)
+        fl.Color      = Color3.fromRGB(200, 140, 255)
+        fl.Brightness = 0.4
+        fl.Range      = 5
+    end
 end
 
 -- ─────────────────────────────────────────────────────────
@@ -364,31 +521,7 @@ local function buildScenery(folder)
     ff.RotSpeed       = NumberRange.new(-20, 20)
     ff.Rotation       = NumberRange.new(0, 360)
 
-    -- ── Glowing lily pads on the pond ──
-    local lilyAngles = {0.4, 1.1, 1.9, 2.8, 3.6, 4.5, 5.3}
-    for _, la in ipairs(lilyAngles) do
-        local ldist = rng:NextNumber(8, 28)
-        local lx    = math.cos(la) * ldist
-        local lz    = math.sin(la) * ldist
-
-        local pad = Instance.new("Part", folder)
-        local padR = rng:NextNumber(1.2, 2.8)
-        pad.Shape        = Enum.PartType.Cylinder
-        pad.Size         = Vector3.new(0.12, padR * 2, padR * 2)
-        pad.CFrame       = CFrame.new(lx, 0.18, lz) * CFrame.Angles(0, 0, math.pi / 2)
-        pad.Anchored     = true
-        pad.CanCollide   = false
-        pad.CastShadow   = false
-        pad.Material     = Enum.Material.Neon
-        pad.Color        = Color3.fromRGB(60, 200, 80)   -- soft green neon
-        pad.Transparency = 0.45
-
-        local padLight = Instance.new("PointLight", pad)
-        padLight.Color      = Color3.fromRGB(80, 220, 100)
-        padLight.Brightness = 1.2
-        padLight.Range      = 12
-        padLight.Shadows    = false
-    end
+    -- Lily pads are now built inside buildPondGlow with natural materials.
 end
 
 -- ─────────────────────────────────────────────────────────
