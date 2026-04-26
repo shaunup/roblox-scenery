@@ -8,6 +8,12 @@ local Players      = game:GetService("Players")
 local RS           = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
+-- Bail out immediately if this module is disabled in ModuleConfig
+local enabledFolder = RS:WaitForChild("EnabledModules", 10)
+if not enabledFolder or not (enabledFolder:WaitForChild("Breathing", 5)).Value then
+    return
+end
+
 local player  = Players.LocalPlayer
 local gui     = player:WaitForChild("PlayerGui")
 local Remotes = RS:WaitForChild("Remotes")

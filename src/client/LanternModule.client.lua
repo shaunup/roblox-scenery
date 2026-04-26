@@ -15,6 +15,12 @@ local TweenService   = game:GetService("TweenService")
 local Workspace      = game:GetService("Workspace")
 local RunService     = game:GetService("RunService")
 
+-- Bail out immediately if this module is disabled in ModuleConfig
+local enabledFolder = RS:WaitForChild("EnabledModules", 10)
+if not enabledFolder or not (enabledFolder:WaitForChild("Lantern", 5)).Value then
+    return
+end
+
 local player  = Players.LocalPlayer
 local gui     = player:WaitForChild("PlayerGui")
 local camera  = Workspace.CurrentCamera

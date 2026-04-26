@@ -22,9 +22,19 @@
 local Players      = game:GetService("Players")
 local RS           = game:GetService("ReplicatedStorage")
 local Workspace    = game:GetService("Workspace")
-local RunService   = game:GetService("RunService")
 
 local Config       = require(RS:WaitForChild("ModuleConfig"))
+
+-- Publish a simple BoolValue per module into RS/EnabledModules so every
+-- client script can read cfg.Enabled without requiring the full ModuleScript.
+local enabledFolder = Instance.new("Folder")
+enabledFolder.Name  = "EnabledModules"
+enabledFolder.Parent = RS
+for id, cfg in pairs(Config.Modules) do
+    local v       = Instance.new("BoolValue", enabledFolder)
+    v.Name        = id
+    v.Value       = cfg.Enabled == true   -- explicit comparison: nil → false
+end
 
 -- ── Shared folders ────────────────────────────────────────────────────────────
 local stationsFolder = Instance.new("Folder")
@@ -34,12 +44,6 @@ stationsFolder.Parent = Workspace
 local remotesFolder  = Instance.new("Folder")
 remotesFolder.Name   = "Remotes"
 remotesFolder.Parent = RS
-
--- Copy config into RS so clients can read positions / prerequisites
-local configValue = Instance.new("ModuleScript")
-configValue.Name   = "ModuleConfig"
-configValue.Source = ""   -- clients require the shared module directly
--- (Rojo will handle the path; clients WaitForChild("ModuleConfig") in RS)
 
 -- ── Remote factory ────────────────────────────────────────────────────────────
 local remotes = {}
@@ -93,15 +97,6 @@ end)
 Players.PlayerRemoving:Connect(function(p) pState[p] = nil end)
 
 -- ── Helpers ───────────────────────────────────────────────────────────────────
-
-local function getChar(player)
-    return player.Character
-end
-
-local function playerFromHit(hit)
-    local c = hit and hit.Parent
-    return c and Players:GetPlayerFromCharacter(c)
-end
 
 local function awardLantern(player, reason)
     local st = pState[player]
@@ -484,62 +479,10 @@ buildJigsaw()
 buildLantern()
 
 -- ── Proximity trigger loop (polls every 0.5 s) ────────────────────────────────
---  Instead of .Touched (unreliable for non-physics parts), we use a heartbeat
---  scan so players just walking near a station activates it.
+--  Uses a per-player/module cooldown so the Start event fires at most once
+--  every 4 seconds even if the player stands still.
 
-local HALF_INTERVAL = 0.5
-local timers = {}   -- [player] = last check time
-
-local function checkProximity()
-    for _, player in ipairs(Players:GetPlayers()) do
-        local char = player.Character
-        if not char then continue end
-        local root = char:FindFirstChild("HumanoidRootPart")
-        if not root then continue end
-        local rp = root.Position
-
-        -- Breathing
-        local bcfg = Config.Modules.Breathing
-        if bcfg and bcfg.Enabled then
-            local st = pState[player]
-            if st and not st.done.Breathing and prereqsMet(player, "Breathing") then
-                if (rp - bcfg.Position).Magnitude < Config.TRIGGER_RADIUS + 2 then
-                    evBreathingStart:FireClient(player)
-                end
-            end
-        end
-        -- Garden
-        local gcfg = Config.Modules.Garden
-        if gcfg and gcfg.Enabled then
-            local st = pState[player]
-            if st and not st.done.Garden and prereqsMet(player, "Garden") then
-                if (rp - gcfg.Position).Magnitude < Config.TRIGGER_RADIUS + 2 then
-                    evGardenStart:FireClient(player)
-                end
-            end
-        end
-        -- Jigsaw
-        local jcfg = Config.Modules.Jigsaw
-        if jcfg and jcfg.Enabled then
-            local st = pState[player]
-            if st and not st.done.Jigsaw and prereqsMet(player, "Jigsaw") then
-                if (rp - jcfg.Position).Magnitude < Config.TRIGGER_RADIUS + 2 then
-                    evJigsawStart:FireClient(player)
-                end
-            end
-        end
-        -- Lantern
-        local lcfg = Config.Modules.Lantern
-        if lcfg and lcfg.Enabled then
-            local st = pState[player]
-            if st and not st.done.Lantern and prereqsMet(player, "Lantern") and hasLantern(player) then
-                if (rp - lcfg.Position).Magnitude < Config.TRIGGER_RADIUS + 2 then
-                    evLanternStart:FireClient(player)
-                end
-            end
-        end
-    end
-end
+local POLL_INTERVAL = 0.5
 
 -- Debounce: only fire each start event once per 4 seconds per player
 local startCooldowns = {}   -- [player..moduleId] = last fire time
@@ -551,7 +494,6 @@ local function cooldownedFire(remote, player, moduleId)
     remote:FireClient(player)
 end
 
--- Override above checkProximity to use cooldown
 local function checkProximityDebounced()
     for _, player in ipairs(Players:GetPlayers()) do
         local char = player.Character
@@ -571,7 +513,8 @@ local function checkProximityDebounced()
         for _, c in ipairs(checks) do
             local id, remote, cond = c[1], c[2], c[3]
             local cfg = Config.Modules[id]
-            if cfg and cfg.Enabled and cond and prereqsMet(player, id) then
+            -- Respect Enabled flag: skip both the proximity check AND the fire
+            if cfg and cfg.Enabled == true and cond and prereqsMet(player, id) then
                 if (rp - cfg.Position).Magnitude < Config.TRIGGER_RADIUS + 2 then
                     cooldownedFire(remote, player, id)
                 end
@@ -582,7 +525,7 @@ end
 
 task.spawn(function()
     while true do
-        task.wait(HALF_INTERVAL)
+        task.wait(POLL_INTERVAL)
         local ok, err = pcall(checkProximityDebounced)
         if not ok then warn("[ModuleManager] proximity check error:", err) end
     end
@@ -592,6 +535,7 @@ end)
 
 -- Breathing complete
 evBreathingComplete.OnServerEvent:Connect(function(player)
+    if not (Config.Modules.Breathing and Config.Modules.Breathing.Enabled == true) then return end
     local st = pState[player]
     if not st or st.done.Breathing then return end
     markDone(player, "Breathing")
@@ -600,6 +544,7 @@ end)
 
 -- Garden: player submits one gratitude text → server echoes back plot index
 evGardenFlower.OnServerEvent:Connect(function(player, text)
+    if not (Config.Modules.Garden and Config.Modules.Garden.Enabled == true) then return end
     local st = pState[player]
     if not st or st.done.Garden then return end
     if not prereqsMet(player, "Garden") then return end
@@ -610,6 +555,7 @@ evGardenFlower.OnServerEvent:Connect(function(player, text)
 end)
 
 evGardenComplete.OnServerEvent:Connect(function(player)
+    if not (Config.Modules.Garden and Config.Modules.Garden.Enabled == true) then return end
     local st = pState[player]
     if not st or st.done.Garden then return end
     if st.gardenPlot < 3 then return end
@@ -645,6 +591,7 @@ evJigsawStart.OnClientEvent = nil   -- not used; start fires from proximity
 
 -- Server sends round data when client fires JigsawSubmit with round number 0 (request)
 evJigsawSubmit.OnServerEvent:Connect(function(player, roundNumber, submittedAnswer)
+    if not (Config.Modules.Jigsaw and Config.Modules.Jigsaw.Enabled == true) then return end
     local st = pState[player]
     if not st or st.done.Jigsaw then return end
     if not prereqsMet(player, "Jigsaw") then return end
@@ -687,6 +634,7 @@ end)
 
 -- Lantern release
 evLanternRelease.OnServerEvent:Connect(function(player)
+    if not (Config.Modules.Lantern and Config.Modules.Lantern.Enabled == true) then return end
     local st = pState[player]
     if not st or st.done.Lantern then return end
     if not hasLantern(player) then return end

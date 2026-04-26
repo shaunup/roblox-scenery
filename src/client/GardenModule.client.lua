@@ -9,6 +9,12 @@ local RS           = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Workspace    = game:GetService("Workspace")
 
+-- Bail out immediately if this module is disabled in ModuleConfig
+local enabledFolder = RS:WaitForChild("EnabledModules", 10)
+if not enabledFolder or not (enabledFolder:WaitForChild("Garden", 5)).Value then
+    return
+end
+
 local player  = Players.LocalPlayer
 local gui     = player:WaitForChild("PlayerGui")
 local Remotes = RS:WaitForChild("Remotes")
@@ -16,6 +22,8 @@ local Remotes = RS:WaitForChild("Remotes")
 local evStart     = Remotes:WaitForChild("Garden_Start")
 local evFlower    = Remotes:WaitForChild("Garden_Flower")
 local evComplete  = Remotes:WaitForChild("Garden_Complete")
+-- GardenPlots is only created by the server when Garden is enabled,
+-- so this WaitForChild is now safe (module is confirmed enabled above)
 local plotsFolder = RS:WaitForChild("GardenPlots", 30)
 
 local done = false
