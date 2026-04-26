@@ -1,0 +1,42 @@
+{
+    "name": "TwilightLanternFestival",
+    "tree": {
+        "$className": "DataModel",
+
+        "ServerScriptService": {
+            "$className": "ServerScriptService",
+            "LightingSetup": {
+                "$path": "src/server/LightingSetup.server.lua"
+            },
+            "ModuleManager": {
+                "$path": "src/server/ModuleManager.server.lua"
+            }
+        },
+
+        "StarterPlayer": {
+            "$className": "StarterPlayer",
+            "StarterPlayerScripts": {
+                "$className": "StarterPlayerScripts",
+                "BreathingModule": {
+                    "$path": "src/client/BreathingModule.client.lua"
+                },
+                "GardenModule": {
+                    "$path": "src/client/GardenModule.client.lua"
+                },
+                "JigsawModule": {
+                    "$path": "src/client/JigsawModule.client.lua"
+                },
+                "LanternModule": {
+                    "$path": "src/client/LanternModule.client.lua"
+                }
+            }
+        },
+
+        "ReplicatedStorage": {
+            "$className": "ReplicatedStorage",
+            "ModuleConfig": {
+                "$path": "src/shared/ModuleConfig.lua"
+            }
+        }
+    }
+}
