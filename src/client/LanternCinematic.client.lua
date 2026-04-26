@@ -63,6 +63,141 @@ local function wait_tween(inst, info, props)
     local t = tween(inst, info, props); t.Completed:Wait()
 end
 
+-- ── FIRECRACKERS ─────────────────────────────────────────────────────────────
+-- Bursts of coloured sparks fired upward from ground level around the release
+-- site. Pure client-side Parts so they don't affect other players.
+local function spawnFirecrackers()
+    local folder = Instance.new("Folder", Workspace)
+    folder.Name  = "Firecrackers_Client"
+
+    -- Warm orange/yellow palette only, matching the lanterns
+    local CRACKER_COLORS = {
+        Color3.fromRGB(255, 200,  50),
+        Color3.fromRGB(255, 155,  30),
+        Color3.fromRGB(255, 230, 100),
+        Color3.fromRGB(255, 120,  20),
+    }
+
+    -- Fire several volleys, each with multiple burst points
+    local VOLLEYS = {
+        { delay=0,    count=6 },
+        { delay=1.2,  count=8 },
+        { delay=2.5,  count=10 },
+        { delay=4.0,  count=12 },
+        { delay=5.5,  count=8  },
+        { delay=7.0,  count=6  },
+    }
+
+    for _, volley in ipairs(VOLLEYS) do
+        task.delay(volley.delay, function()
+            for b = 1, volley.count do
+                -- Random launch point on the ground around the release site
+                local angle  = math.random() * math.pi * 2
+                local dist   = math.random() * 18
+                local origin = RELEASE_POS + Vector3.new(
+                    math.cos(angle) * dist,
+                    0.5,
+                    math.sin(angle) * dist
+                )
+
+                -- Each burst = a host part that fires a ParticleEmitter once
+                local host = Instance.new("Part", folder)
+                host.Size        = Vector3.new(0.1, 0.1, 0.1)
+                host.CFrame      = CFrame.new(origin)
+                host.Anchored    = true
+                host.CanCollide  = false
+                host.Transparency = 1
+
+                local col = CRACKER_COLORS[math.random(#CRACKER_COLORS)]
+
+                -- Streak: thin bright line shooting upward
+                local streak = Instance.new("ParticleEmitter", host)
+                streak.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0,   Color3.fromRGB(255,255,200)),
+                    ColorSequenceKeypoint.new(0.3, col),
+                    ColorSequenceKeypoint.new(1,   Color3.fromRGB(80, 40, 0)),
+                })
+                streak.LightEmission  = 1
+                streak.LightInfluence = 0
+                streak.Size = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0,   0.12),
+                    NumberSequenceKeypoint.new(0.6, 0.06),
+                    NumberSequenceKeypoint.new(1,   0),
+                })
+                streak.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0),
+                    NumberSequenceKeypoint.new(0.7, 0.2),
+                    NumberSequenceKeypoint.new(1, 1),
+                })
+                streak.Lifetime    = NumberRange.new(0.5, 0.9)
+                streak.Rate        = 0
+                streak.Speed       = NumberRange.new(28, 55)   -- fast upward streak
+                streak.SpreadAngle = Vector2.new(8, 8)         -- near-vertical
+                streak.RotSpeed    = NumberRange.new(-20, 20)
+                streak.Rotation    = NumberRange.new(0, 360)
+                streak.EmissionDirection = Enum.NormalId.Top
+
+                -- Burst: radial explosion at the apex
+                -- Slight delay so it pops after the streak reaches its peak
+                local burstDelay = 0.05 + math.random() * 0.15
+
+                task.delay(burstDelay, function()
+                    -- Move host to apex height
+                    local apexPos = origin + Vector3.new(
+                        math.random(-3, 3),
+                        math.random(18, 40),   -- height of burst
+                        math.random(-3, 3)
+                    )
+                    host.CFrame = CFrame.new(apexPos)
+
+                    local burst = Instance.new("ParticleEmitter", host)
+                    burst.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0,   Color3.fromRGB(255,255,220)),
+                        ColorSequenceKeypoint.new(0.2, col),
+                        ColorSequenceKeypoint.new(1,   Color3.fromRGB(60, 30, 0)),
+                    })
+                    burst.LightEmission  = 1
+                    burst.LightInfluence = 0
+                    burst.Size = NumberSequence.new({
+                        NumberSequenceKeypoint.new(0,   0),
+                        NumberSequenceKeypoint.new(0.1, 0.28),
+                        NumberSequenceKeypoint.new(1,   0),
+                    })
+                    burst.Transparency = NumberSequence.new({
+                        NumberSequenceKeypoint.new(0,   0),
+                        NumberSequenceKeypoint.new(0.5, 0.1),
+                        NumberSequenceKeypoint.new(1,   1),
+                    })
+                    burst.Lifetime    = NumberRange.new(0.8, 1.6)
+                    burst.Rate        = 0
+                    burst.Speed       = NumberRange.new(8, 20)
+                    burst.SpreadAngle = Vector2.new(180, 180)   -- full sphere explosion
+                    burst.RotSpeed    = NumberRange.new(-60, 60)
+                    burst.Rotation    = NumberRange.new(0, 360)
+
+                    -- Flash PointLight for the pop
+                    local fl = Instance.new("PointLight", host)
+                    fl.Color      = col
+                    fl.Brightness = 8
+                    fl.Range      = 40
+
+                    streak:Emit(12)
+                    burst:Emit(40)
+
+                    TweenService:Create(fl,
+                        TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                        { Brightness = 0 }):Play()
+
+                    task.delay(2, function() if host.Parent then host:Destroy() end end)
+                end)
+            end
+        end)
+    end
+
+    -- Clean up folder after all volleys finish
+    task.delay(12, function() if folder.Parent then folder:Destroy() end end)
+end
+
 -- ── POND AMBIENCE – bioluminescent fireflies ──────────────────────────────────
 local function spawnPondAmbience()
     local folder = Instance.new("Folder", Workspace)
@@ -323,8 +458,9 @@ local function runCinematic(data)
     local prevCamType = camera.CameraType
     camera.CameraType = Enum.CameraType.Scriptable
 
-    -- Spawn pond ambience
+    -- Spawn pond ambience + firecrackers simultaneously
     task.spawn(spawnPondAmbience)
+    task.spawn(spawnFirecrackers)   -- fireworks launch from the ground
 
     -- Show title card
     showReleaseTitle(data.playerName, data.message)

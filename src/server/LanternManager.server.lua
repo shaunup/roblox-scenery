@@ -271,67 +271,107 @@ local function buildReleaseSite()
     return trigger
 end
 
--- ── Spawn a sky lantern (shared, replicates to all) ───────────────────────────
-local LANTERN_COLORS = {
-    Color3.fromRGB(255, 200,  50),
-    Color3.fromRGB(255, 130,  40),
-    Color3.fromRGB(255, 100, 180),
-    Color3.fromRGB(100, 200, 255),
-    Color3.fromRGB(160, 255, 180),
-    Color3.fromRGB(220, 160, 255),
-}
-local function colorForIdx(i) return LANTERN_COLORS[((i-1) % #LANTERN_COLORS) + 1] end
+-- ── Lantern colour: warm orange-yellow only ───────────────────────────────────
+-- Two alternating warm tones so the sky looks natural rather than uniform.
+local LANTERN_ORANGE = Color3.fromRGB(255, 155,  40)
+local LANTERN_YELLOW = Color3.fromRGB(255, 210,  70)
+local LANTERN_GLOW   = Color3.fromRGB(255, 190,  60)   -- light colour for both
 
-local function spawnSkyLantern(position, message, colorIdx)
+local function lanternColor(i)
+    return (i % 2 == 0) and LANTERN_YELLOW or LANTERN_ORANGE
+end
+
+-- ── Spawn a sky lantern ────────────────────────────────────────────────────────
+-- hidden = true  → Transparency 1, light off  (pre-release state)
+-- hidden = false → fully visible (after release)
+local function spawnSkyLantern(position, message, colorIdx, hidden)
     local id  = newLanternId()
-    local col = colorForIdx(colorIdx)
+    local col = lanternColor(colorIdx)
 
     local body = Instance.new("Part", skyFolder)
-    body.Name        = id
-    body.Size        = Vector3.new(1.4, 2.2, 1.4)
-    body.CFrame      = CFrame.new(position)
-    body.Anchored    = true
-    body.CanCollide  = false
-    body.CastShadow  = false
-    body.Material    = Enum.Material.Neon
-    body.Color       = col
-    body.Transparency = 0.22
+    body.Name         = id
+    body.Size         = Vector3.new(1.4, 2.2, 1.4)
+    body.CFrame       = CFrame.new(position)
+    body.Anchored     = true
+    body.CanCollide   = false
+    body.CastShadow   = false
+    body.Material     = Enum.Material.Neon
+    body.Color        = col
+    body.Transparency = hidden and 1 or 0.22
 
-    local glow = addLight(body, 1.0, 16, col)
+    local pl = addLight(body, hidden and 0 or 1.0, 16, LANTERN_GLOW)
 
-    -- Flame flicker (Fire effect)
+    -- Flame (hidden until reveal)
     local fire = Instance.new("Fire", body)
-    fire.Heat = 2; fire.Size = 0.5
-    fire.Color = Color3.fromRGB(255, 180, 50)
+    fire.Heat           = hidden and 0 or 2
+    fire.Size           = hidden and 0 or 0.5
+    fire.Color          = Color3.fromRGB(255, 180, 50)
     fire.SecondaryColor = Color3.fromRGB(255, 100, 20)
 
-    -- Tag the lantern so the client can ClickDetector → server lookup
+    -- Tag for click-lookup
     local tag = Instance.new("StringValue", body)
     tag.Name  = "LanternId"
     tag.Value = id
 
-    -- Add ClickDetector so clients can interact
+    -- ClickDetector (always present so we can wire it immediately)
     local cd = Instance.new("ClickDetector", body)
-    cd.MaxActivationDistance = 999   -- visible from far, camera will pan close
+    cd.MaxActivationDistance = 999
 
     lanternMessages[id] = message
 
-    -- Gentle bob via a server-side tween loop
-    task.spawn(function()
-        while body and body.Parent do
-            local base = body.Position
-            TweenService:Create(body, TweenInfo.new(3 + math.random()*2,
-                Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
-                { Position = base + Vector3.new(math.sin(tick())*0.3, 0.6, 0) }):Play()
-            task.wait(3 + math.random()*2)
-            TweenService:Create(body, TweenInfo.new(3 + math.random()*2,
-                Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
-                { Position = base }):Play()
-            task.wait(3 + math.random()*2)
-        end
-    end)
+    -- Gentle bob (only runs when visible)
+    if not hidden then
+        task.spawn(function()
+            while body and body.Parent do
+                local base = body.Position
+                TweenService:Create(body, TweenInfo.new(3 + math.random()*2,
+                    Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                    { Position = base + Vector3.new(math.sin(tick())*0.4, 0.8, 0) }):Play()
+                task.wait(3 + math.random()*2)
+                TweenService:Create(body, TweenInfo.new(3 + math.random()*2,
+                    Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                    { Position = base }):Play()
+                task.wait(3 + math.random()*2)
+            end
+        end)
+    end
 
-    return id, body
+    return id, body, pl, fire
+end
+
+-- ── Reveal all hidden lanterns (called on release) ────────────────────────────
+local hiddenLanterns = {}   -- list of { body, pl, fire }
+
+local function revealAllLanterns()
+    for _, entry in ipairs(hiddenLanterns) do
+        local body, pl, fire = entry.body, entry.pl, entry.fire
+        if not body or not body.Parent then continue end
+        -- Stagger the reveal slightly per lantern for a wave effect
+        task.delay(math.random() * 3, function()
+            TweenService:Create(body,
+                TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                { Transparency = 0.22 }):Play()
+            TweenService:Create(pl,
+                TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                { Brightness = 1.0 }):Play()
+            fire.Heat = 2; fire.Size = 0.5
+            -- Start bob loop now that it's visible
+            task.spawn(function()
+                while body and body.Parent do
+                    local base = body.Position
+                    TweenService:Create(body, TweenInfo.new(3 + math.random()*2,
+                        Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                        { Position = base + Vector3.new(math.sin(tick())*0.4, 0.8, 0) }):Play()
+                    task.wait(3 + math.random()*2)
+                    TweenService:Create(body, TweenInfo.new(3 + math.random()*2,
+                        Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                        { Position = base }):Play()
+                    task.wait(3 + math.random()*2)
+                end
+            end)
+        end)
+    end
+    hiddenLanterns = {}
 end
 
 -- ── Pre-populate sky with AI lanterns ─────────────────────────────────────────
@@ -400,18 +440,19 @@ local AI_MESSAGES = {
 
 task.spawn(function()
     task.wait(2)  -- let scene load first
-    local rng  = Random.new(42)
-    local count = 60
+    local rng   = Random.new(42)
+    local count = 80   -- more lanterns for a fuller sky
     for i = 1, count do
-        -- Spread across a large sky area above the map
-        local x  = rng:NextNumber(-120, 120)
-        local y  = rng:NextNumber(80,  220)
-        local z  = rng:NextNumber(-220, -60)
+        -- Spread very high – 250-500 studs up so they fill the deep sky
+        local x   = rng:NextNumber(-200, 200)
+        local y   = rng:NextNumber(250,  500)
+        local z   = rng:NextNumber(-300, -80)
         local msg = AI_MESSAGES[((i-1) % #AI_MESSAGES) + 1]
-        spawnSkyLantern(Vector3.new(x, y, z), msg, i)
-        task.wait(0.04)  -- stagger so server doesn't spike
+        local id, body, pl, fire = spawnSkyLantern(Vector3.new(x, y, z), msg, i, true)
+        table.insert(hiddenLanterns, { body=body, pl=pl, fire=fire })
+        task.wait(0.03)
     end
-    print("[LanternManager] Sky populated with", count, "lanterns.")
+    print("[LanternManager] " .. count .. " lanterns hidden, awaiting release.")
 end)
 
 -- ── Wire the shop prompt ──────────────────────────────────────────────────────
@@ -445,43 +486,64 @@ task.spawn(function()
 end)
 
 -- ── Handle release ────────────────────────────────────────────────────────────
+local Lighting = game:GetService("Lighting")
+
 LanternRelease.OnServerEvent:Connect(function(player, message)
     if not hasLantern[player] then return end
     if releasedBy[player] then return end
     if type(message) ~= "string" then message = "✦" end
-    message = message:sub(1, 140)  -- cap length
+    message = message:sub(1, 140)
 
     hasLantern[player]  = false
     releasedBy[player]  = true
 
-    -- Spawn the player's personal lantern at release site, slightly above water
-    local char = player.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    local spawnPos = root and (root.Position + Vector3.new(0, 3, 0)) or (RELEASE_POS + Vector3.new(0, 4, 0))
+    -- ── 1. Dramatically shift to deep night for all players ───────────────────
+    TweenService:Create(Lighting,
+        TweenInfo.new(4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {
+            ClockTime       = 0,       -- midnight
+            Brightness      = 0.2,
+            Ambient         = Color3.fromRGB(10, 8, 25),
+            OutdoorAmbient  = Color3.fromRGB(15, 12, 35),
+        }
+    ):Play()
 
-    local id, lanternPart = spawnSkyLantern(spawnPos, message, lanternIdCounter)
+    -- ── 2. Spawn the player's lantern at their position ───────────────────────
+    local char     = player.Character
+    local root     = char and char:FindFirstChild("HumanoidRootPart")
+    local spawnPos = root and (root.Position + Vector3.new(0, 3, 0))
+                  or (RELEASE_POS + Vector3.new(0, 4, 0))
 
-    -- Animate it rising to join the sky (server-side, so all clients see it)
+    local id, playerLantern = spawnSkyLantern(spawnPos, message, lanternIdCounter, false)
+
+    -- Rise very high – 400-500 studs up so it joins the hidden sky lanterns
     task.spawn(function()
-        local targetPos = spawnPos + Vector3.new(
-            math.random(-30, 30),
-            math.random(100, 180),
-            math.random(-60, -20)
+        local rng = Random.new()
+        local targetPos = Vector3.new(
+            spawnPos.X + rng:NextNumber(-40, 40),
+            spawnPos.Y + rng:NextNumber(400, 500),
+            spawnPos.Z + rng:NextNumber(-80, -20)
         )
-        TweenService:Create(lanternPart,
-            TweenInfo.new(18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            { Position = targetPos }):Play()
+        -- Fast at first, slows gently as it enters the night sky
+        TweenService:Create(playerLantern,
+            TweenInfo.new(22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            { Position = targetPos }
+        ):Play()
     end)
 
-    -- Broadcast to ALL clients to start the cinematic
+    -- ── 3. Reveal all hidden lanterns in a staggered wave ─────────────────────
+    task.delay(1.5, revealAllLanterns)
+
+    -- ── 4. Broadcast to all clients (cinematic + firecrackers) ────────────────
     LanternReleased:FireAllClients({
-        playerId   = player.UserId,
-        playerName = player.Name,
-        lanternId  = id,
-        message    = message,
-        startPos   = spawnPos,
+        playerId    = player.UserId,
+        playerName  = player.Name,
+        lanternId   = id,
+        message     = message,
+        startPos    = spawnPos,
     })
-    print("[LanternManager] " .. player.Name .. " released lantern: " .. message:sub(1,40))
+
+    print("[LanternManager] " .. player.Name .. " released lantern. Night falls, sky lights up.")
 end)
 
 -- ── Click handler ─────────────────────────────────────────────────────────────
