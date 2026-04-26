@@ -15,7 +15,7 @@ local TweenService      = game:GetService("TweenService")
 
 -- ═══════════════════════════════════════════════════════════════
 --  POSITION – change this to move the entire garden
-local GARDEN_POS = Vector3.new(-0.463, 7.75, -102.296)
+local GARDEN_POS = Vector3.new(-3.463, 1.75, -102.296)
 -- ═══════════════════════════════════════════════════════════════
 
 -- ── Remotes (re-use existing folder, add garden remotes) ─────────────────────

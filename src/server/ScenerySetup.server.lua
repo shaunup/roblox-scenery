@@ -526,39 +526,6 @@ end
 -- ─────────────────────────────────────────────────────────
 local function buildAmbience(folder)
     local rng = Random.new(33)
-    local treeSpots = {
-        {80, 10}, {-85, 20}, {70, -50}, {-75, -45},
-        {100, -20}, {-100, 15}, {55, 70}, {-60, 75},
-        {90, -100}, {-90, -90}, {30, -130}, {-35, -125},
-        {20, -180}, {-90, -200}, {50, -210}, {10, -50},
-        {-40, 30}, {60, -90}, {-70, -130}, {80, -170},
-    }
-    for _, tp in ipairs(treeSpots) do
-        local ox  = tp[1] + rng:NextNumber(-8, 8)
-        local oz  = tp[2] + rng:NextNumber(-8, 8)
-        local tH  = rng:NextNumber(7, 14)
-        local tR  = rng:NextNumber(0.5, 1.0)
-        local cR  = rng:NextNumber(5, 9)
-
-        local trunk = Instance.new("Part", folder)
-        trunk.Size          = Vector3.new(tR * 2, tH, tR * 2)
-        trunk.CFrame        = CFrame.new(ox, tH / 2, oz)
-        trunk.Anchored      = true
-        trunk.Material      = Enum.Material.Wood
-        trunk.BrickColor    = BrickColor.new("Reddish brown")
-        trunk.TopSurface    = Enum.SurfaceType.Smooth
-        trunk.BottomSurface = Enum.SurfaceType.Smooth
-
-        local canopy = Instance.new("Part", folder)
-        canopy.Shape         = Enum.PartType.Ball
-        canopy.Size          = Vector3.new(cR * 2, cR * 2, cR * 2)
-        canopy.CFrame        = CFrame.new(ox, tH + cR * 0.65, oz)
-        canopy.Anchored      = true
-        canopy.Material      = Enum.Material.SmoothPlastic
-        canopy.BrickColor    = BrickColor.new("Dark green")
-        canopy.TopSurface    = Enum.SurfaceType.Smooth
-        canopy.BottomSurface = Enum.SurfaceType.Smooth
-    end
 
     -- Firefly emitter
     local ffPart = Instance.new("Part", folder)
@@ -602,11 +569,11 @@ setupLighting()
 local folder = Instance.new("Folder", Workspace)
 folder.Name  = "TwilightTrail"
 
-buildGround()
-buildSpawn()
-buildTrail(folder)
-buildBreathingZone(folder)
-buildBonfireZone(folder)
+-- buildGround()
+-- buildSpawn()
+-- buildTrail(folder)
+-- buildBreathingZone(folder)
+-- buildBonfireZone(folder)
 buildAmbience(folder)
 
 print("[TwilightTrail] Scene built.")
