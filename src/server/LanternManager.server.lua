@@ -439,18 +439,19 @@ local AI_MESSAGES = {
 }
 
 task.spawn(function()
-    task.wait(2)  -- let scene load first
+    task.wait(2)   -- let scene load first
     local rng   = Random.new(42)
-    local count = 80   -- more lanterns for a fuller sky
+    local count = 500   -- millions feel – 500 server Parts is safe; each is tiny
+    -- Spread across a very wide, very tall sky volume so they blanket the sky
+    -- in every direction the cinematic camera looks.
     for i = 1, count do
-        -- Spread very high – 250-500 studs up so they fill the deep sky
-        local x   = rng:NextNumber(-200, 200)
-        local y   = rng:NextNumber(250,  500)
-        local z   = rng:NextNumber(-300, -80)
+        local x   = rng:NextNumber(-500, 500)
+        local y   = rng:NextNumber(200,  800)   -- 200–800 studs up
+        local z   = rng:NextNumber(-600, 100)   -- wide Z so horizon is full
         local msg = AI_MESSAGES[((i-1) % #AI_MESSAGES) + 1]
         local id, body, pl, fire = spawnSkyLantern(Vector3.new(x, y, z), msg, i, true)
         table.insert(hiddenLanterns, { body=body, pl=pl, fire=fire })
-        task.wait(0.03)
+        task.wait(0.01)   -- 0.01 s stagger = ~5 s total spawn time, low spike
     end
     print("[LanternManager] " .. count .. " lanterns hidden, awaiting release.")
 end)

@@ -80,12 +80,13 @@ local function spawnFirecrackers()
 
     -- Fire several volleys, each with multiple burst points
     local VOLLEYS = {
-        { delay=0,    count=6 },
-        { delay=1.2,  count=8 },
-        { delay=2.5,  count=10 },
-        { delay=4.0,  count=12 },
-        { delay=5.5,  count=8  },
-        { delay=7.0,  count=6  },
+        { delay=0.0,  count=10 },   -- first burst the moment lantern is high
+        { delay=0.8,  count=14 },
+        { delay=1.8,  count=18 },   -- crescendo
+        { delay=3.0,  count=20 },
+        { delay=4.5,  count=16 },
+        { delay=6.0,  count=12 },
+        { delay=7.5,  count=8  },   -- fade out
     }
 
     for _, volley in ipairs(VOLLEYS) do
@@ -144,9 +145,9 @@ local function spawnFirecrackers()
                 task.delay(burstDelay, function()
                     -- Move host to apex height
                     local apexPos = origin + Vector3.new(
-                        math.random(-3, 3),
-                        math.random(18, 40),   -- height of burst
-                        math.random(-3, 3)
+                        math.random(-6, 6),
+                        math.random(40, 80),   -- high enough to clear trees and be cinematic
+                        math.random(-6, 6)
                     )
                     host.CFrame = CFrame.new(apexPos)
 
@@ -458,9 +459,10 @@ local function runCinematic(data)
     local prevCamType = camera.CameraType
     camera.CameraType = Enum.CameraType.Scriptable
 
-    -- Spawn pond ambience + firecrackers simultaneously
+    -- Pond ambience starts immediately
     task.spawn(spawnPondAmbience)
-    task.spawn(spawnFirecrackers)   -- fireworks launch from the ground
+    -- Firecrackers fire once the lantern is clearly high in the sky (~7 s in)
+    task.delay(7, spawnFirecrackers)
 
     -- Show title card
     showReleaseTitle(data.playerName, data.message)
