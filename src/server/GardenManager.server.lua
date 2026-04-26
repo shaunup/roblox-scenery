@@ -86,13 +86,6 @@ local function buildGarden()
     f.Name   = "GratitudeGarden"
     local pos = GARDEN_POS
 
-    -- Soft grass clearing
-    makePart(f, {
-        Name="GardenGround", Size=Vector3.new(28, 0.3, 24),
-        CFrame=CFrame.new(pos + Vector3.new(0, -0.45, 0)),
-        BrickColor=BrickColor.new("Bright green"), Material=Enum.Material.Grass,
-    })
-
     -- Wooden entrance arch
     for _, ox in ipairs({-3.2, 3.2}) do
         makePart(f, {
