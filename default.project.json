@@ -10,6 +10,9 @@
       },
       "MilestoneManager": {
         "$path": "src/server/MilestoneManager.server.lua"
+      },
+      "GardenManager": {
+        "$path": "src/server/GardenManager.server.lua"
       }
     },
 
@@ -20,11 +23,14 @@
       },
       "Remotes": {
         "$className": "Folder",
-        "OpenBreathing": { "$className": "RemoteEvent" },
-        "BreathingComplete": { "$className": "RemoteEvent" },
-        "AwardLantern": { "$className": "RemoteEvent" },
-        "OpenMusicDialog": { "$className": "RemoteEvent" },
-        "PlayMusic": { "$className": "RemoteEvent" }
+        "OpenBreathing":    { "$className": "RemoteEvent" },
+        "BreathingComplete":{ "$className": "RemoteEvent" },
+        "AwardLantern":     { "$className": "RemoteEvent" },
+        "OpenMusicDialog":  { "$className": "RemoteEvent" },
+        "PlayMusic":        { "$className": "RemoteEvent" },
+        "OpenGarden":       { "$className": "RemoteEvent" },
+        "GardenFlower":     { "$className": "RemoteEvent" },
+        "GardenComplete":   { "$className": "RemoteEvent" }
       }
     },
 
@@ -35,6 +41,9 @@
       },
       "MusicUI": {
         "$path": "src/client/MusicUI.client.lua"
+      },
+      "GardenUI": {
+        "$path": "src/client/GardenUI.client.lua"
       }
     },
 
