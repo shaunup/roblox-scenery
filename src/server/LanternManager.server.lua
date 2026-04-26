@@ -185,7 +185,84 @@ local function buildReleaseSite()
     f.Name  = "ReleaseSite"
     local p = RELEASE_POS
 
-    -- Invisible trigger zone
+    -- Stone viewing platform (walkable)
+    local platform = makePart(f, {
+        Name="Platform", Size=Vector3.new(10, 0.4, 8),
+        CFrame=CFrame.new(p + Vector3.new(0, -0.2, 0)),
+        BrickColor=BrickColor.new("Medium stone grey"), Material=Enum.Material.Cobblestone,
+    })
+
+    -- Low railing on three sides (far, left, right — path side stays open)
+    local rails = {
+        { Vector3.new(0,  0.5, -4),  Vector3.new(10, 0.3, 0.3) },  -- far rail
+        { Vector3.new(-5, 0.5,  0),  Vector3.new(0.3, 0.3, 8)  },  -- left rail
+        { Vector3.new( 5, 0.5,  0),  Vector3.new(0.3, 0.3, 8)  },  -- right rail
+    }
+    for i, rd in ipairs(rails) do
+        makePart(f, {
+            Name="Rail"..i, Size=rd[2],
+            CFrame=CFrame.new(p + rd[1]),
+            BrickColor=BrickColor.new("Medium stone grey"), Material=Enum.Material.Cobblestone,
+        })
+    end
+
+    -- Two wooden posts with glowing hanging lanterns flanking the platform
+    for _, px in ipairs({-3.5, 3.5}) do
+        makePart(f, {
+            Name="LanternPost", Size=Vector3.new(0.4, 4.5, 0.4),
+            CFrame=CFrame.new(p + Vector3.new(px, 2.25, -3.5)),
+            BrickColor=BrickColor.new("Reddish brown"), Material=Enum.Material.Wood,
+        })
+        local hang = makePart(f, {
+            Name="HangLantern", Size=Vector3.new(0.85, 1.3, 0.85),
+            CFrame=CFrame.new(p + Vector3.new(px, 5.0, -3.5)),
+            BrickColor=BrickColor.new("Bright orange"),
+            Material=Enum.Material.Neon, CanCollide=false, Transparency=0.2,
+        })
+        addLight(hang, 1.4, 20, Color3.fromRGB(255, 200, 80))
+    end
+
+    -- Glowing neon ground ring to make the spot obvious from a distance
+    local ring = makePart(f, {
+        Name="GlowRing", Size=Vector3.new(0.25, 9.6, 9.6),
+        CFrame=CFrame.new(p + Vector3.new(0, 0.1, 0)) * CFrame.Angles(0, 0, math.pi/2),
+        BrickColor=BrickColor.new("Bright yellow"),
+        Material=Enum.Material.Neon, CanCollide=false, CastShadow=false, Transparency=0.35,
+    })
+    ring.Shape = Enum.PartType.Cylinder
+    addLight(ring, 1.0, 22, Color3.fromRGB(255, 220, 80))
+
+    -- Sign billboard above the platform
+    local signPost = makePart(f, {
+        Name="SignPost", Size=Vector3.new(0.3, 5, 0.3),
+        CFrame=CFrame.new(p + Vector3.new(0, 2.5, -4.2)),
+        BrickColor=BrickColor.new("Reddish brown"), Material=Enum.Material.Wood,
+    })
+    local bg = Instance.new("BillboardGui", signPost)
+    bg.Size        = UDim2.new(0, 340, 0, 80)
+    bg.StudsOffset = Vector3.new(0, 4, 0)
+    bg.AlwaysOnTop = false
+    local lbl = Instance.new("TextLabel", bg)
+    lbl.Size = UDim2.new(1,0,1,0); lbl.BackgroundTransparency = 1
+    lbl.Text = "🏮  Lantern Release  🏮\nStand here to release your lantern"
+    lbl.TextColor3 = Color3.fromRGB(255, 230, 140)
+    lbl.TextScaled = true; lbl.Font = Enum.Font.GothamBold
+
+    -- ProximityPrompt so the player gets a clear "you're in the right spot" cue
+    -- (the proximity poll will still fire LanternSiteReached, this is extra clarity)
+    local promptPart = makePart(f, {
+        Name="ReleasePromptPart", Size=Vector3.new(1, 1, 1),
+        CFrame=CFrame.new(p + Vector3.new(0, 1.5, 0)),
+        Material=Enum.Material.Neon, CanCollide=false, Transparency=1,
+    })
+    local pp = Instance.new("ProximityPrompt", promptPart)
+    pp.ActionText            = "Release Lantern"
+    pp.ObjectText            = "🏮 Release Site"
+    pp.MaxActivationDistance = 12
+    pp.HoldDuration          = 0
+    pp.RequiresLineOfSight   = false
+
+    -- Invisible trigger zone (same as before, used by proximity poll)
     local trigger = makePart(f, {
         Name="ReleaseTrigger", Size=Vector3.new(12, 6, 12),
         CFrame=CFrame.new(p + Vector3.new(0, 3, 0)),
