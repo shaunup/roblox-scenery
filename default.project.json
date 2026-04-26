@@ -5,11 +5,11 @@
 
         "ServerScriptService": {
             "$className": "ServerScriptService",
-            "WorldBuilder": {
-                "$path": "src/ServerScriptService/WorldBuilder.server.lua"
+            "LightingSetup": {
+                "$path": "src/server/LightingSetup.server.lua"
             },
-            "GameManager": {
-                "$path": "src/ServerScriptService/GameManager.server.lua"
+            "ModuleManager": {
+                "$path": "src/server/ModuleManager.server.lua"
             }
         },
 
@@ -17,25 +17,25 @@
             "$className": "StarterPlayer",
             "StarterPlayerScripts": {
                 "$className": "StarterPlayerScripts",
-                "CameraFollow": {
-                    "$path": "src/StarterPlayerScripts/CameraFollow.client.lua"
+                "BreathingModule": {
+                    "$path": "src/client/BreathingModule.client.lua"
                 },
-                "BreathingExercise": {
-                    "$path": "src/StarterPlayerScripts/BreathingExercise.client.lua"
+                "GardenModule": {
+                    "$path": "src/client/GardenModule.client.lua"
                 },
-                "MusicianDialog": {
-                    "$path": "src/StarterPlayerScripts/MusicianDialog.client.lua"
+                "JigsawModule": {
+                    "$path": "src/client/JigsawModule.client.lua"
                 },
-                "LanternRelease": {
-                    "$path": "src/StarterPlayerScripts/LanternRelease.client.lua"
+                "LanternModule": {
+                    "$path": "src/client/LanternModule.client.lua"
                 }
             }
         },
 
         "ReplicatedStorage": {
             "$className": "ReplicatedStorage",
-            "GameConfig": {
-                "$path": "src/ReplicatedStorage/GameConfig.lua"
+            "ModuleConfig": {
+                "$path": "src/shared/ModuleConfig.lua"
             }
         }
     }
