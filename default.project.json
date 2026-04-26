@@ -13,6 +13,9 @@
       },
       "GardenManager": {
         "$path": "src/server/GardenManager.server.lua"
+      },
+      "JigsawManager": {
+        "$path": "src/server/JigsawManager.server.lua"
       }
     },
 
@@ -30,7 +33,12 @@
         "PlayMusic":        { "$className": "RemoteEvent" },
         "OpenGarden":       { "$className": "RemoteEvent" },
         "GardenFlower":     { "$className": "RemoteEvent" },
-        "GardenComplete":   { "$className": "RemoteEvent" }
+        "GardenComplete":   { "$className": "RemoteEvent" },
+        "OpenJigsaw":       { "$className": "RemoteEvent" },
+        "JigsawRound":      { "$className": "RemoteEvent" },
+        "JigsawSubmit":     { "$className": "RemoteEvent" },
+        "JigsawResult":     { "$className": "RemoteEvent" },
+        "JigsawDone":       { "$className": "RemoteEvent" }
       }
     },
 
@@ -44,6 +52,9 @@
       },
       "GardenUI": {
         "$path": "src/client/GardenUI.client.lua"
+      },
+      "JigsawUI": {
+        "$path": "src/client/JigsawUI.client.lua"
       }
     },
 
