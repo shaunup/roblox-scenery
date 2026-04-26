@@ -1,0 +1,13 @@
+{
+    "name": "TwilightLanternFestival",
+    "tree": {
+        "$className": "DataModel",
+
+        "ServerScriptService": {
+            "$className": "ServerScriptService",
+            "WorldBuilder": {
+                "$path": "src/ServerScriptService/WorldBuilder.server.lua"
+            }
+        }
+    }
+}
