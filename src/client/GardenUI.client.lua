@@ -164,9 +164,9 @@ local function buildUI()
 
     local card = Instance.new("Frame", bg)
     card.Name = "Card"
-    card.Size = UDim2.new(0, 500, 0, 440)
-    card.AnchorPoint = Vector2.new(0.5, 0.5)
-    card.Position    = UDim2.new(0.5, 0, 1.2, 0)   -- starts off-screen below
+    card.Size = UDim2.new(0, 460, 0, 440)
+    card.AnchorPoint = Vector2.new(0, 0.5)
+    card.Position    = UDim2.new(-0.55, 0, 0.5, 0)   -- starts off-screen to the left
     card.BackgroundColor3 = Color3.fromRGB(12, 8, 28)
     card.BackgroundTransparency = 0.05; card.BorderSizePixel = 0
     Instance.new("UICorner", card).CornerRadius = UDim.new(0, 20)
@@ -322,7 +322,7 @@ local function run()
     local screen, card, dots, flName, prompt, tb, btn, status = buildUI()
     screen.Enabled = true
     TweenService:Create(card, TweenInfo.new(0.55,Enum.EasingStyle.Back,Enum.EasingDirection.Out),
-        {Position=UDim2.new(0.5,0,0.5,0)}):Play()
+        {Position=UDim2.new(0.02, 0, 0.5, 0)}):Play()    -- sits on the left, right side open for flowers
     task.wait(0.6)
 
     for round = 1, 3 do
@@ -384,7 +384,7 @@ local function run()
 
     -- Slide card out
     TweenService:Create(card, TweenInfo.new(0.45,Enum.EasingStyle.Quad,Enum.EasingDirection.In),
-        {Position=UDim2.new(0.5,0,-0.65,0)}):Play()
+        {Position=UDim2.new(-0.55, 0, 0.5, 0)}):Play()   -- slides back out to the left
     task.wait(0.5); screen:Destroy()
 
     -- Confetti burst above the garden
