@@ -164341,7 +164341,6 @@ end)
 			<Item class="LocalScript" referent="RBXE3A02B2DD66248448C3098FA91B4D987">
 				<Properties>
 					<ProtectedString name="Source"><![CDATA[local player = game.Players.LocalPlayer
-local gui = player.PlayerGui:WaitForChild("InventoryGui")
 local frame = gui:WaitForChild("Frame")
 local paperLabel = frame:WaitForChild("PaperLabel")
 local stickLabel = frame:WaitForChild("StickLabel")
